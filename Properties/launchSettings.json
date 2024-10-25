@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "appsvc_function_dev_cm_listmgmt_dotnet001": {
+      "commandName": "Project",
+      "commandLineArgs": "--port 7188",
+      "launchBrowser": false
+    }
+  }
+}
