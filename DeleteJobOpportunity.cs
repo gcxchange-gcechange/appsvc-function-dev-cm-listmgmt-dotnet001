@@ -27,11 +27,22 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
                 string itemId = data?.ItemId;
-
-                _logger.LogInformation($"Delete list item with ID: {itemId}");
+                List<string> itemIds = itemId.Split(',').ToList();
 
                 GraphServiceClient client = Common.GetClient(_logger);
-                await client.Sites[config.SiteId].Lists[config.ListId].Items[itemId].DeleteAsync();
+
+                foreach (var id in itemIds)
+                {
+                    try
+                    {
+                        await client.Sites[config.SiteId].Lists[config.ListId].Items[id.Trim()].DeleteAsync();
+                        _logger.LogInformation($"Deleted list item with ID: {id.Trim()}");
+                    }
+                    catch (Exception e)
+                    {
+                        _logger.LogInformation($"Failed to delete list item with ID: {id.Trim()}");
+                    }
+                }
             }
             catch (Exception e)
             {

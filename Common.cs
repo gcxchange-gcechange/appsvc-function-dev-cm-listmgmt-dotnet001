@@ -10,27 +10,28 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
     {
         public string ContactObjectId;
         public string ContactName;
-        public string Department;
+        public string DepartmentLookupId;
         public string ContactEmail;
         public string JobTitleEn;
         public string JobTitleFr;
-        public string JobType;
-        public string ProgramArea;
-        public string ClassificationCode;
-        public string ClassificationLevel;
+        public string[] JobTypeLookupId;
+        public string ProgramAreaLookupId;
+        public string ClassificationCodeLookupId;
+        public string ClassificationLevelLookupId;
         public string NumberOfOpportunities;
-        public string Duration;
+        public string DurationLookupId;
         public DateTime? ApplicationDeadlineDate;
         public string JobDescriptionEn;
         public string JobDescriptionFr;
-        public string EssentialSkills;
-        public string WorkSchedule;
-        public string Location;
-        public string SecurityClearance;
-        public string LanguageRequirement;
-        public string WorkArrangement;
+        public string EssentialSkills; 
+        public string WorkScheduleLookupId;
+        public string LocationLookupId;
+        public string SecurityClearanceLookupId;
+        public string LanguageRequirementLookupId;
+        public string WorkArrangementLookupId;
         public bool? ApprovedStaffing;
         public string AssetSkills;
+        public string CityLookupId;
     }
 
     internal class Common
@@ -46,22 +47,48 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             try
             {
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
-                Dictionary<string, object> dictionary = JsonConvert.DeserializeObject<Dictionary<string, object>>(JsonConvert.SerializeObject(opportunity));
 
                 var listItem = new ListItem
                 {
                     Fields = new FieldValueSet
                     {
-                        AdditionalData = dictionary
+                        AdditionalData = new Dictionary<string, object>()
+                        {
+                            {"ContactObjectId", opportunity.ContactObjectId},
+                            {"ContactName", opportunity.ContactName},
+                            {"DepartmentLookupId", opportunity.DepartmentLookupId},
+                            {"ContactEmail", opportunity.ContactEmail},
+                            {"JobTitleEn", opportunity.JobTitleEn},
+                            {"JobTitleFr", opportunity.JobTitleFr},
+                            {"JobTypeLookupId@odata.type", "Collection(Edm.String)"},
+                            {"JobTypeLookupId", opportunity.JobTypeLookupId},
+                            {"ProgramAreaLookupId", opportunity.ProgramAreaLookupId},
+                            {"ClassificationCodeLookupId", opportunity.ClassificationCodeLookupId},
+                            {"ClassificationLevelLookupId", opportunity.ClassificationLevelLookupId},
+                            {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
+                            {"DurationLookupId", opportunity.DurationLookupId},
+                            {"ApplicationDeadlineDate", opportunity.ApplicationDeadlineDate},
+                            {"JobDescriptionEn", opportunity.JobDescriptionEn},
+                            {"JobDescriptionFr", opportunity.JobDescriptionFr},
+                            {"EssentialSkills", opportunity.EssentialSkills},
+                            {"WorkScheduleLookupId", opportunity.WorkScheduleLookupId},
+                            {"LocationLookupId", opportunity.LocationLookupId},
+                            {"SecurityClearanceLookupId", opportunity.SecurityClearanceLookupId},
+                            {"LanguageRequirementLookupId", opportunity.LanguageRequirementLookupId},
+                            {"WorkArrangementLookupId", opportunity.WorkArrangementLookupId},
+                            {"ApprovedStaffing", opportunity.ApprovedStaffing},
+                            {"AssetSkills", opportunity.AssetSkills},
+                            {"CityLookupId", opportunity.CityLookupId}
+                        }
                     }
                 };
 
-                logger.LogWarning($"listItem.Fields.AdditionalData.Count = {listItem.Fields.AdditionalData.Count}");
-                foreach (var field in listItem.Fields.AdditionalData)
-                {
-                    logger.LogWarning($"{field.Key} = {field.Value}");
-                    logger.LogWarning($"IsNull? {field.Value == null}");
-                }
+                //logger.LogWarning($"listItem.Fields.AdditionalData.Count = {listItem.Fields.AdditionalData.Count}");
+                //foreach (var field in listItem.Fields.AdditionalData)
+                //{
+                //    logger.LogWarning($"{field.Key} = {field.Value}");
+                //    logger.LogWarning($"IsNull? {field.Value == null}");
+                //}
 
                 return listItem;
             }

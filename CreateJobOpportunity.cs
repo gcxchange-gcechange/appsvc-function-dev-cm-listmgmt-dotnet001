@@ -26,6 +26,11 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 var listItem = Common.BuildListItem(new StreamReader(req.Body).ReadToEnd(), _logger);
                 GraphServiceClient client = Common.GetClient(_logger);
+
+                string json = Newtonsoft.Json.JsonConvert.SerializeObject(listItem.Fields.AdditionalData);
+
+                _logger.LogInformation($"json: {json}");
+
                 await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
             }
             catch (Exception e)
