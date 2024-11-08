@@ -34,7 +34,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         public string CityLookupId;
     }
 
-    internal class Common
+    public class Common
     {
         public static GraphServiceClient GetClient(ILogger logger)
         {
