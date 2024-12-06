@@ -4,7 +4,8 @@
 
 Provides functionality for managing the sharepoint list used for job opportunities
 - Create new job opportunity
-- Update new job opportunity
+- Update existing job opportunity
+- Delete existing job opportunity
 
 ## Prerequisites
 
