@@ -84,6 +84,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var response = httpClient.SendAsync(request).Result.Content.ReadAsStringAsync().Result;
                 dynamic responseJson = JsonConvert.DeserializeObject(response);
                 var expirationDate = DateTimeOffset.UtcNow.AddMinutes(60.0);
+
                 return new AccessToken(responseJson.access_token.ToString(), expirationDate);
             }
 
@@ -110,6 +111,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var response = httpClient.SendAsync(request).Result.Content.ReadAsStringAsync().Result;
                 dynamic responseJson = JsonConvert.DeserializeObject(response);
                 var expirationDate = DateTimeOffset.UtcNow.AddMinutes(60.0);
+
                 return new ValueTask<AccessToken>(new AccessToken(responseJson.access_token.ToString(), expirationDate));
             }
         }

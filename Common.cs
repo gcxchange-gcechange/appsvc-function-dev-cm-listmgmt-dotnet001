@@ -6,34 +6,6 @@ using static appsvc_function_dev_cm_listmgmt_dotnet001.Auth;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
 {
-    internal class JobOpportunity
-    {
-        public string ContactObjectId;
-        public string ContactName;
-        public string DepartmentLookupId;
-        public string ContactEmail;
-        public string JobTitleEn;
-        public string JobTitleFr;
-        public string[] JobTypeLookupId;
-        public string ProgramAreaLookupId;
-        public string ClassificationCodeLookupId;
-        public string ClassificationLevelLookupId;
-        public string NumberOfOpportunities;
-        public string DurationLookupId;
-        public DateTime? ApplicationDeadlineDate;
-        public string JobDescriptionEn;
-        public string JobDescriptionFr;
-        public string EssentialSkills; 
-        public string WorkScheduleLookupId;
-        public string LocationLookupId;
-        public string SecurityClearanceLookupId;
-        public string LanguageRequirementLookupId;
-        public string WorkArrangementLookupId;
-        public bool? ApprovedStaffing;
-        public string AssetSkills;
-        public string CityLookupId;
-    }
-
     public class Common
     {
         public static GraphServiceClient GetClient(ILogger logger)
@@ -54,31 +26,29 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                     {
                         AdditionalData = new Dictionary<string, object>()
                         {
-                            {"ContactObjectId", opportunity.ContactObjectId},
-                            {"ContactName", opportunity.ContactName},
-                            {"DepartmentLookupId", opportunity.DepartmentLookupId},
-                            {"ContactEmail", opportunity.ContactEmail},
-                            {"JobTitleEn", opportunity.JobTitleEn},
-                            {"JobTitleFr", opportunity.JobTitleFr},
-                            {"JobTypeLookupId@odata.type", "Collection(Edm.String)"},
-                            {"JobTypeLookupId", opportunity.JobTypeLookupId},
-                            {"ProgramAreaLookupId", opportunity.ProgramAreaLookupId},
-                            {"ClassificationCodeLookupId", opportunity.ClassificationCodeLookupId},
-                            {"ClassificationLevelLookupId", opportunity.ClassificationLevelLookupId},
-                            {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
-                            {"DurationLookupId", opportunity.DurationLookupId},
-                            {"ApplicationDeadlineDate", opportunity.ApplicationDeadlineDate},
-                            {"JobDescriptionEn", opportunity.JobDescriptionEn},
-                            {"JobDescriptionFr", opportunity.JobDescriptionFr},
-                            {"EssentialSkills", opportunity.EssentialSkills},
-                            {"WorkScheduleLookupId", opportunity.WorkScheduleLookupId},
-                            {"LocationLookupId", opportunity.LocationLookupId},
-                            {"SecurityClearanceLookupId", opportunity.SecurityClearanceLookupId},
-                            {"LanguageRequirementLookupId", opportunity.LanguageRequirementLookupId},
-                            {"WorkArrangementLookupId", opportunity.WorkArrangementLookupId},
-                            {"ApprovedStaffing", opportunity.ApprovedStaffing},
-                            {"AssetSkills", opportunity.AssetSkills},
-                            {"CityLookupId", opportunity.CityLookupId}
+                            {"ContactObjectIdTest", opportunity.ContactObjectId},
+                            {"ContactNameTest", opportunity.ContactName},
+                            {"ha560ef4634b48b49bcb4e0358a668ed", opportunity.Department.ToString()},                //DepartmentTest
+                            {"ContactEmailTest", opportunity.ContactEmail},
+                            {"JobTitleEnTest", opportunity.JobTitleEn},
+                            {"JobTitleFrTest", opportunity.JobTitleFr},
+                            {"n5a8092d214642c391695b072c2b6ebf", opportunity.JobType.ToString()},                   // JobTypeTest
+                            {"h9ed8b922e6b4ec68698b62ca9658243",  opportunity.ProgramArea.ToString()},              // ProgramAreaTest
+                            {"laf5fd57fe9641c1a283d71d2fb42bfa", opportunity.ClassificationCode.ToString()},        // ClassificationCodeTest
+                            {"ClassificationLevelTestLookupId", opportunity.ClassificationLevelLookupId},
+                            {"NumberOfOpportunitiesTest", opportunity.NumberOfOpportunities},
+                            {"cda78f5757a94444aec25da23261bb64", opportunity.Duration.ToString()},                  // DurationTest
+                            {"ApplicationDeadlineDateTest", opportunity.ApplicationDeadlineDate},
+                            {"JobDescriptionEnTest", opportunity.JobDescriptionEn},
+                            {"JobDescriptionFrTest", opportunity.JobDescriptionFr},
+                            {"EssentialSkillsTest", opportunity.EssentialSkills},
+                            {"ka65c2b89e214ab6a1b1a5c97dc0c30e", opportunity.WorkSchedule.ToString()},              // WorkScheduleTest
+                            {"i88ce72e4a594b0cb30693e3e0b90194", opportunity.Location.ToString()},                  // LocationTest
+                            {"b78aa598489d482aa3274ce9f1e83da2", opportunity.SecurityClearance.ToString()},         // SecurityClearanceTest
+                            {"e54ee833fac249acaafc47a309855bde", opportunity.LanguageRequirement.ToString()},       // LanguageRequirementTest
+                            {"pfe8022cbeee4db4826595bc01c1601c", opportunity.WorkArrangement.ToString()},           // WorkArrangementTest
+                            {"ApprovedStaffingTest", opportunity.ApprovedStaffing},
+                            {"AssetSkillsTest", opportunity.AssetSkills}
                         }
                     }
                 };
@@ -104,4 +74,41 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         }
     }
 
+    internal class JobOpportunity
+    {
+        public string ContactObjectId;
+        public string ContactName;
+        public Term Department;
+        public string ContactEmail;
+        public string JobTitleEn;
+        public string JobTitleFr;
+        public Term JobType;
+        public Term ProgramArea;
+        public Term ClassificationCode;
+        public string ClassificationLevelLookupId;
+        public string NumberOfOpportunities;
+        public Term Duration;
+        public DateTime? ApplicationDeadlineDate;
+        public string JobDescriptionEn;
+        public string JobDescriptionFr;
+        public string EssentialSkills;
+        public Term WorkSchedule;
+        public Term Location;
+        public Term SecurityClearance;
+        public Term LanguageRequirement;
+        public Term WorkArrangement;
+        public bool? ApprovedStaffing;
+        public string AssetSkills;
+    }
+
+    internal class Term
+    {
+        public string Label;
+        public string Guid;
+
+        public override string ToString()
+        {
+            return $"-1;{Label}|{Guid}";
+        }
+    }
 }
