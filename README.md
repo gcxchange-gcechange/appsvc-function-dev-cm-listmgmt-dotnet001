@@ -46,6 +46,16 @@ n/a
 | secretName              | Secret name used to authorize the function app                                 |
 | siteId                  | ID of the site that contains the job opportunity list                          |
 | tenantId                | Id of the Azure tenant that hosts the function app                             |
+| departmentHiddenColName                | The name of the hidden column that corresponds to the metadata column Department |
+| jobTypeHiddenColName                | The name of the hidden column that corresponds to the metadata column JobType |
+| programAreaHiddenColName                | The name of the hidden column that corresponds to the metadata column ProgramArea |
+| classificationCodeHiddenColName                | The name of the hidden column that corresponds to the metadata column ClassificationCode |
+| durationHiddenColName                | The name of the hidden column that corresponds to the metadata column Duration |
+| workScheduleHiddenColName                | The name of the hidden column that corresponds to the metadata column WorkSchedule |
+| locationHiddenColName                | The name of the hidden column that corresponds to the metadata column Location |
+| securityClearanceHiddenColName                | The name of the hidden column that corresponds to the metadata column SecurityClearance |
+| languageRequirementHiddenColName                | The name of the hidden column that corresponds to the metadata column LanguageRequirement|
+| workArrangementHiddenColName                | The name of the hidden column that corresponds to the metadata column WorkArrangement |
 
 ## Version history
 
