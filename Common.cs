@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Newtonsoft.Json;
@@ -18,6 +19,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         {
             try
             {
+                var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
 
                 var listItem = new ListItem
@@ -28,27 +30,27 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                         {
                             {"ContactObjectIdTest", opportunity.ContactObjectId},
                             {"ContactNameTest", opportunity.ContactName},
-                            {"ha560ef4634b48b49bcb4e0358a668ed", opportunity.Department.ToString()},                                                            //DepartmentTest
+                            {config["departmentHiddenColName"], opportunity.Department.ToString()},
                             {"ContactEmailTest", opportunity.ContactEmail},
                             {"JobTitleEnTest", opportunity.JobTitleEn},
                             {"JobTitleFrTest", opportunity.JobTitleFr},
-                            {"n5a8092d214642c391695b072c2b6ebf", string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},                  // JobTypeTest
-                            {"h9ed8b922e6b4ec68698b62ca9658243",  opportunity.ProgramArea.ToString()},                                                          // ProgramAreaTest
-                            {"laf5fd57fe9641c1a283d71d2fb42bfa", opportunity.ClassificationCode.ToString()},                                                    // ClassificationCodeTest
+                            {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
+                            {config["programAreaHiddenColName"],  opportunity.ProgramArea.ToString()},
+                            {config["classificationCodeHiddenColName"], opportunity.ClassificationCode.ToString()},
                             {"ClassificationLevelTestLookupId", opportunity.ClassificationLevelLookupId},
                             {"NumberOfOpportunitiesTest", opportunity.NumberOfOpportunities},
-                            {"cda78f5757a94444aec25da23261bb64", opportunity.Duration.ToString()},                                                              // DurationTest
+                            {config["durationHiddenColName"], opportunity.Duration.ToString()},
                             {"ApplicationDeadlineDateTest", opportunity.ApplicationDeadlineDate},
                             {"JobDescriptionEnTest", opportunity.JobDescriptionEn},
                             {"JobDescriptionFrTest", opportunity.JobDescriptionFr},
-                            {"EssentialSkillsTest", opportunity.EssentialSkills},
-                            {"ka65c2b89e214ab6a1b1a5c97dc0c30e", opportunity.WorkSchedule.ToString()},                                                          // WorkScheduleTest
-                            {"i88ce72e4a594b0cb30693e3e0b90194", opportunity.Location.ToString()},                                                              // LocationTest
-                            {"b78aa598489d482aa3274ce9f1e83da2", opportunity.SecurityClearance.ToString()},                                                     // SecurityClearanceTest
-                            {"e54ee833fac249acaafc47a309855bde", opportunity.LanguageRequirement.ToString()},                                                   // LanguageRequirementTest
-                            {"pfe8022cbeee4db4826595bc01c1601c", opportunity.WorkArrangement.ToString()},                                                       // WorkArrangementTest
+                            {config["workScheduleHiddenColName"], opportunity.WorkSchedule.ToString()},
+                            {config["locationHiddenColName"], opportunity.Location.ToString()},
+                            {config["securityClearanceHiddenColName"], opportunity.SecurityClearance.ToString()},
+                            {config["languageRequirementHiddenColName"], opportunity.LanguageRequirement.ToString()},
+                            {config["workArrangementHiddenColName"], opportunity.WorkArrangement.ToString()},
                             {"ApprovedStaffingTest", opportunity.ApprovedStaffing},
-                            {"AssetSkillsTest", opportunity.AssetSkills}
+                            {"SkillsTestLookupId@odata.type", "Collection(Edm.String)"},
+                            {"SkillsTestLookupId", opportunity.Skills}
                         }
                     }
                 };
@@ -91,14 +93,13 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         public DateTime? ApplicationDeadlineDate;
         public string JobDescriptionEn;
         public string JobDescriptionFr;
-        public string EssentialSkills;
         public Term WorkSchedule;
         public Term Location;
         public Term SecurityClearance;
         public Term LanguageRequirement;
         public Term WorkArrangement;
         public bool? ApprovedStaffing;
-        public string AssetSkills;
+        public string[] Skills;
     }
 
     internal class Term
