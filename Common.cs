@@ -22,35 +22,41 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
 
+                // TODO
+                int durationInDays = 0;
+
                 var listItem = new ListItem
                 {
                     Fields = new FieldValueSet
                     {
                         AdditionalData = new Dictionary<string, object>()
                         {
-                            {"ContactObjectIdTest", opportunity.ContactObjectId},
-                            {"ContactNameTest", opportunity.ContactName},
-                            {config["departmentHiddenColName"], opportunity.Department.ToString()},
-                            {"ContactEmailTest", opportunity.ContactEmail},
-                            {"JobTitleEnTest", opportunity.JobTitleEn},
-                            {"JobTitleFrTest", opportunity.JobTitleFr},
+                            {"ContactObjectId", opportunity.ContactObjectId},
+                            {"ContactName", opportunity.ContactName},
+                            {"Department", opportunity.DepartmentId},
+                            {"ContactEmail", opportunity.ContactEmail},
+                            {"JobTitleEn", opportunity.JobTitleEn},
+                            {"JobTitleFr", opportunity.JobTitleFr},
                             {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
                             {config["programAreaHiddenColName"],  opportunity.ProgramArea.ToString()},
-                            {config["classificationCodeHiddenColName"], opportunity.ClassificationCode.ToString()},
-                            {"ClassificationLevelTestLookupId", opportunity.ClassificationLevelLookupId},
-                            {"NumberOfOpportunitiesTest", opportunity.NumberOfOpportunities},
-                            {config["durationHiddenColName"], opportunity.Duration.ToString()},
-                            {"ApplicationDeadlineDateTest", opportunity.ApplicationDeadlineDate},
-                            {"JobDescriptionEnTest", opportunity.JobDescriptionEn},
-                            {"JobDescriptionFrTest", opportunity.JobDescriptionFr},
-                            {config["workScheduleHiddenColName"], opportunity.WorkSchedule.ToString()},
-                            {config["locationHiddenColName"], opportunity.Location.ToString()},
-                            {config["securityClearanceHiddenColName"], opportunity.SecurityClearance.ToString()},
-                            {config["languageRequirementHiddenColName"], opportunity.LanguageRequirement.ToString()},
-                            {config["workArrangementHiddenColName"], opportunity.WorkArrangement.ToString()},
-                            {"ApprovedStaffingTest", opportunity.ApprovedStaffing},
-                            {"SkillsTestLookupId@odata.type", "Collection(Edm.String)"},
-                            {"SkillsTestLookupId", opportunity.Skills}
+                            {"ClassificationCode", opportunity.ClassificationCodeId},
+                            {"ClassificationLevel", opportunity.ClassificationLevelId},
+                            {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
+                            {"Duration", opportunity.DurationId},
+                            {"ApplicationDeadlineDate", opportunity.ApplicationDeadlineDate},
+                            {"JobDescriptionEn", opportunity.JobDescriptionEn},
+                            {"JobDescriptionFr", opportunity.JobDescriptionFr},
+                            {"WorkSchedule", opportunity.WorkScheduleId},
+                            {"SecurityClearance", opportunity.SecurityClearanceId},
+                            {"LanguageComprehension", opportunity.LanguageComprehension},
+                            {"LanguageRequirement", opportunity.LanguageRequirementId},
+                            {"WorkArrangement", opportunity.WorkArrangementId},
+                            {"ApprovedStaffing", opportunity.ApprovedStaffing},
+                            {"Skills@odata.type", "Collection(Edm.String)"},
+                            {"Skills", opportunity.Skills},
+                            {"City", opportunity.CityId},
+                            {"DurationQuantity", opportunity.DurationQuantity},
+                            {"DurationInDays", durationInDays}
                         }
                     }
                 };
@@ -80,26 +86,28 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
     {
         public string ContactObjectId;
         public string ContactName;
-        public Term Department;
+        public string DepartmentId;
         public string ContactEmail;
         public string JobTitleEn;
         public string JobTitleFr;
         public Term[] JobType;
         public Term ProgramArea;
-        public Term ClassificationCode;
-        public string ClassificationLevelLookupId;
-        public string NumberOfOpportunities;
-        public Term Duration;
+        public string ClassificationCodeId;
+        public string ClassificationLevelId;
+        public int NumberOfOpportunities;
+        public string DurationId;
         public DateTime? ApplicationDeadlineDate;
         public string JobDescriptionEn;
         public string JobDescriptionFr;
-        public Term WorkSchedule;
-        public Term Location;
-        public Term SecurityClearance;
-        public Term LanguageRequirement;
-        public Term WorkArrangement;
+        public string WorkScheduleId;
+        public string CityId;
+        public string SecurityClearanceId;
+        public string LanguageComprehension;
+        public string LanguageRequirementId;
+        public string WorkArrangementId;
         public bool? ApprovedStaffing;
         public string[] Skills;
+        public int DurationQuantity;
     }
 
     internal class Term
