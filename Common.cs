@@ -22,8 +22,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
 
-                // TODO
-                int durationInDays = 0;
+                int durationInDays = opportunity.DurationId == config["durationMonthIndex"] ? opportunity.DurationQuantity * 30 : opportunity.DurationQuantity * 360;
 
                 var listItem = new ListItem
                 {
@@ -33,28 +32,28 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                         {
                             {"ContactObjectId", opportunity.ContactObjectId},
                             {"ContactName", opportunity.ContactName},
-                            {"Department", opportunity.DepartmentId},
+                            {"DepartmentLookupId", opportunity.DepartmentId},
                             {"ContactEmail", opportunity.ContactEmail},
                             {"JobTitleEn", opportunity.JobTitleEn},
                             {"JobTitleFr", opportunity.JobTitleFr},
                             {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
                             {config["programAreaHiddenColName"],  opportunity.ProgramArea.ToString()},
-                            {"ClassificationCode", opportunity.ClassificationCodeId},
-                            {"ClassificationLevel", opportunity.ClassificationLevelId},
+                            {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
+                            {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
                             {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
-                            {"Duration", opportunity.DurationId},
+                            {"DurationLookupId", opportunity.DurationId},
                             {"ApplicationDeadlineDate", opportunity.ApplicationDeadlineDate},
                             {"JobDescriptionEn", opportunity.JobDescriptionEn},
                             {"JobDescriptionFr", opportunity.JobDescriptionFr},
-                            {"WorkSchedule", opportunity.WorkScheduleId},
-                            {"SecurityClearance", opportunity.SecurityClearanceId},
+                            {"WorkScheduleLookupId", opportunity.WorkScheduleId},
+                            {"SecurityClearanceLookupId", opportunity.SecurityClearanceId},
                             {"LanguageComprehension", opportunity.LanguageComprehension},
-                            {"LanguageRequirement", opportunity.LanguageRequirementId},
-                            {"WorkArrangement", opportunity.WorkArrangementId},
+                            {"LanguageRequirementLookupId", opportunity.LanguageRequirementId},
+                            {"WorkArrangementLookupId", opportunity.WorkArrangementId},
                             {"ApprovedStaffing", opportunity.ApprovedStaffing},
-                            {"Skills@odata.type", "Collection(Edm.String)"},
-                            {"Skills", opportunity.Skills},
-                            {"City", opportunity.CityId},
+                            {"SkillsLookupId@odata.type", "Collection(Edm.String)"},
+                            {"SkillsLookupId", opportunity.SkillIds},
+                            {"CityLookupId", opportunity.CityId},
                             {"DurationQuantity", opportunity.DurationQuantity},
                             {"DurationInDays", durationInDays}
                         }
@@ -106,7 +105,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         public string LanguageRequirementId;
         public string WorkArrangementId;
         public bool? ApprovedStaffing;
-        public string[] Skills;
+        public string[] SkillIds;
         public int DurationQuantity;
     }
 
