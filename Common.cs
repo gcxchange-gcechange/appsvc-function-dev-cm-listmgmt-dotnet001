@@ -22,7 +22,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
 
-                int durationInDays = opportunity.DurationId == config["durationMonthIndex"] ? opportunity.DurationQuantity * 30 : opportunity.DurationQuantity * 360;
+                int durationInDays = opportunity.DurationId == config["durationMonthId"] ? opportunity.DurationQuantity * 30 : opportunity.DurationQuantity * 360;
 
                 var listItem = new ListItem
                 {
