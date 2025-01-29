@@ -35,17 +35,20 @@ n/a
 
 ## App setting
 
-| Name                    | Description                                                                    |
-| ----------------------- | ------------------------------------------------------------------------------ |
-| AzureWebJobsStorage     | Connection string for the storage acoount                                      |
-| clientId                | The application (client) ID of the app registration                            |
-| delegatedUserName       | The account used for delegated access                                          |
-| delegatedUserSecret     | The name of the key vault secret for the delegated user password               |
-| keyVaultUrl             | Address for the key vault                                                      |
-| listId                  | ID of the job opportunity SharePoint list                                      |
-| secretName              | Secret name used to authorize the function app                                 |
-| siteId                  | ID of the site that contains the job opportunity list                          |
-| tenantId                | Id of the Azure tenant that hosts the function app                             |
+| Name                     | Description                                                                       |
+| ------------------------ | --------------------------------------------------------------------------------- |
+| AzureWebJobsStorage      | Connection string for the storage acoount                                         |
+| clientId                 | The application (client) ID of the app registration                               |
+| delegatedUserName        | The account used for delegated access                                             |
+| delegatedUserSecret      | The name of the key vault secret for the delegated user password                  |
+| keyVaultUrl              | Address for the key vault                                                         |
+| listId                   | ID of the job opportunity SharePoint list                                         |
+| secretName               | Secret name used to authorize the function app                                    |
+| siteId                   | ID of the site that contains the job opportunity list                             |
+| tenantId                 | Id of the Azure tenant that hosts the function app                                |
+| jobTypeHiddenColName     | The name of the hidden column that corresponds to the metadata column JobType     |
+| programAreaHiddenColName | The name of the hidden column that corresponds to the metadata column ProgramArea |
+| durationMonthId          | The Id of the month item in the Duration list. Used to calculate DurationInDays   |
 
 ## Version history
 
