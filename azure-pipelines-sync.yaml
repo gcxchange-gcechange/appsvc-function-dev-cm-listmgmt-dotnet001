@@ -11,11 +11,11 @@ steps:
     echo Sync azure repo
     git config --global http.version HTTP/1.1
     B64_PAT=$(echo -n ":$PAT" | base64)
-    git -c http.extraHeader="Authorization: Basic ${B64_PAT}" clone --bare https://dev.azure.com/tbs-sct/GCExchange/_git/$REPO_NAME Sync_directory
+    git clone --bare https://$PAT@dev.azure.com/tbs-sct/GCExchange/_git/$REPO_NAME Sync_director
     cd Sync_directory
     git remote add --mirror=fetch upstream https://github.com/gcxchange-gcechange/$REPO_NAME
     git fetch upstream --tags
-    git -c http.extraHeader="Authorization: Basic ${B64_PAT}" push origin --all
+    git push https://$PAT@dev.azure.com/tbs-sct/GCExchange/_git/$REPO_NAME --all
   env:
     PAT: $(PAT)
     REPO_NAME: "appsvc-function-dev-cm-listmgmt-dotnet001"
