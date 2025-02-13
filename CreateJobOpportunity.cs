@@ -21,6 +21,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             _logger.LogInformation("CreateJobOpportunity received a request.");
 
             bool _exception = false;
+            string newItemId = null; 
 
             try
             {
@@ -29,7 +30,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 GraphServiceClient client = Common.GetClient(_logger);
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(listItem.Fields.AdditionalData);
 
-                await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
+                var newItem = await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
+                newItemId = newItem.Id;
             }
             catch (Exception e)
             {
@@ -43,7 +45,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             if (!_exception)
             {
-                return new OkResult();
+                return new OkObjectResult(newItemId);
             } else
             {
                 return new BadRequestResult();
