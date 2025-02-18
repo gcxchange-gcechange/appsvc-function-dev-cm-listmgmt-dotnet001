@@ -25,7 +25,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 string keyVaultUrl = config["keyVaultUrl"];
                 string secretName = config["secretName"];
                 string secretNamePassword = config["delegatedUserSecret"];
-
                 _clientId = config["clientId"];
                 _tenantId = config["tenantId"];
                 _username = config["delegatedUserName"];
@@ -33,6 +32,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 _tokenEndpoint = "https://login.microsoftonline.com/" + _tenantId + "/oauth2/v2.0/token";
                 try
                 {
+                    _log.LogInformation("Can you see this");
+                    _log.LogInformation("Can you see clientid"+ _clientId);
                     SecretClientOptions options = new SecretClientOptions()
                     {
                         Retry =
