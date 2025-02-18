@@ -33,7 +33,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 try
                 {
                     _log.LogInformation("Can you see this");
-                    _log.LogInformation("Can you see clientid"+ _clientId);
+                    _log.LogInformation("Can you see clientid"+ _tenantId + _username+ secretNamePassword+ secretName+ keyVaultUrl);
                     SecretClientOptions options = new SecretClientOptions()
                     {
                         Retry =
