@@ -11,6 +11,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
     {
         public static GraphServiceClient GetClient(ILogger logger)
         {
+            logger.LogInformation("Common get client");
             ROPCConfidentialTokenCredential auth = new ROPCConfidentialTokenCredential(logger);
             return new GraphServiceClient(auth);
         }

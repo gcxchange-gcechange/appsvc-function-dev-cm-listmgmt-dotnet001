@@ -18,7 +18,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         [Function("GetHiddenColumnName")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
-            _logger.LogInformation("GetHiddenColumnName received a request.");
+            _logger.LogInformation("GetHiddenColumnName received a request.-1");
 
             var columnNames = new List<string>();
 
@@ -26,7 +26,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             {
                 Config config = new Config();
                 GraphServiceClient client = Common.GetClient(_logger);
-
+                _logger.LogInformation("Hidden culumn call");
                 var columns = await client
                     .Sites[config.SiteId]
                     .Lists[config.ListId]
