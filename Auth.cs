@@ -22,7 +22,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             public ROPCConfidentialTokenCredential(Microsoft.Extensions.Logging.ILogger log)
             {
                 IConfiguration config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
-                _log.LogInformation("In auth - step 1");
                 string keyVaultUrl = config["keyVaultUrl"];
                 string secretName = config["secretName"];
                 string secretNamePassword = config["delegatedUserSecret"];
@@ -34,7 +33,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 _tokenEndpoint = "https://login.microsoftonline.com/" + _tenantId + "/oauth2/v2.0/token";
                 try
                 {
-                    _log.LogInformation("In try - step 2");
                     SecretClientOptions options = new SecretClientOptions()
                     {
                         Retry =
