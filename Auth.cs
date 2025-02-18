@@ -32,7 +32,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 _username = config["delegatedUserName"];
                 _log = log;
                 _tokenEndpoint = "https://login.microsoftonline.com/" + _tenantId + "/oauth2/v2.0/token";
-                _log.LogInformation("In auth - step 1 - client value" + _clientId);
+                _log.LogInformation("In auth - step 1 - client value");
                 try
                 {
                     _log.LogInformation("In try - step 2");
