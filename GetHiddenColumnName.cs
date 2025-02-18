@@ -18,7 +18,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         [Function("GetHiddenColumnName")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
-            _logger.LogInformation("GetHiddenColumnName received a request.-1");
+            _logger.LogInformation("GetHiddenColumnName received a request.-2");
 
             var columnNames = new List<string>();
 
