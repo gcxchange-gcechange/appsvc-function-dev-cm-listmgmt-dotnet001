@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Newtonsoft.Json;
+using System.Text.RegularExpressions;
 using static appsvc_function_dev_cm_listmgmt_dotnet001.Auth;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
@@ -19,8 +20,11 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         {
             try
             {
+
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
+
+                ValidateJobOpportunity(opportunity);
 
                 int durationInDays = opportunity.DurationId == config["durationMonthId"] ? opportunity.DurationQuantity * 30 : opportunity.DurationQuantity * 360;
 
@@ -78,6 +82,126 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 return null;
             }
+        }
+
+        private static void ValidateJobOpportunity(JobOpportunity opportunity)
+        {
+            var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
+
+            ValidateTextField(opportunity.ContactObjectId, "ContactObjectId");
+            ValidateTextField(opportunity.ContactName, "ContactName");
+            ValidateLookupId(opportunity.DepartmentId, "DepartmentId");
+            ValidateTextField(opportunity.ContactEmail, "ContactEmail");
+            ValidateTextField(opportunity.JobTitleEn, "JobTitleEn");
+            ValidateTextField(opportunity.JobTitleFr, "JobTitleFr");
+            ValidateTerms(opportunity.JobType, "JobType");
+            ValidateTerm(opportunity.ProgramArea, "ProgramArea");
+            ValidateLookupId(opportunity.ClassificationCodeId, "ClassificationCodeId");
+            ValidateLookupId(opportunity.ClassificationLevelId, "ClassificationLevelId");
+            ValidateNumber(opportunity.NumberOfOpportunities, "NumberOfOpportunities");
+            ValidateLookupId(opportunity.DurationId, "DurationId");
+            ValidateNumber(opportunity.DurationQuantity, "DurationQuantity");
+            ValidateDateTime(opportunity.ApplicationDeadlineDate, "ApplicationDeadlineDate");
+            ValidateMultiTextField(opportunity.JobDescriptionEn, "JobDescriptionEn");
+            ValidateMultiTextField(opportunity.JobDescriptionFr, "JobDescriptionFr");
+            ValidateLookupId(opportunity.WorkScheduleId, "WorkScheduleId");
+            ValidateLookupId(opportunity.SecurityClearanceId, "SecurityClearanceId");
+            ValidateLookupId(opportunity.LanguageRequirementId, "LanguageRequirementId");
+            ValidateLookupId(opportunity.WorkArrangementId, "WorkArrangementId");
+            ValidateLookupId(opportunity.CityId, "CityId");
+
+            if (opportunity.SkillIds == null || opportunity.SkillIds.Length == 0)
+                throw new ArgumentException("Field cannot be null or empty.", "SkillIds");
+
+            for (var i = 0; i < opportunity.SkillIds.Length; i++)
+            {
+                ValidateLookupId(opportunity.SkillIds[i], $"SkillIds[{i}]");
+            }
+
+            if (opportunity.ApprovedStaffing == null)
+                throw new ArgumentException("Field cannot be null.", "ApprovedStaffing");
+
+            if (opportunity.LanguageRequirementId == config["bilingualLanguageRequirementId"])
+            {
+                ValidateTextField(opportunity.LanguageComprehension, "LanguageComprehension");
+
+                Regex langCompRegex = new Regex(@"^[A-C]{3}-[A-C]{3}$");
+                if (!langCompRegex.IsMatch(opportunity.LanguageComprehension))
+                    throw new ArgumentException("Field is formatted incorrectly.", "LanguageComprehension");
+            }
+        }
+
+        private static void ValidateLookupId(string value, string fieldName)
+        {
+            if (value == null || value == "")
+                throw new ArgumentException("Field cannot be null or empty.", fieldName);
+
+            int parseId;
+            if (!int.TryParse(value, out parseId))
+                throw new ArgumentException("Field must be a number", fieldName);
+
+            if (parseId < 0)
+                throw new ArgumentException("Field must be a positive number", fieldName);
+        }
+
+        private static void ValidateTextField(string value, string fieldName)
+        {
+            if (value == null || value == "")
+                throw new ArgumentException("Field cannot be null or empty.", fieldName);
+
+            if (value.Length > 255)
+                throw new ArgumentOutOfRangeException(fieldName, "Field exceeds the maximum allowed length of 255 characters.");
+        }
+
+        private static void ValidateMultiTextField(string value, string fieldName)
+        {
+            if (value == null || value == "")
+                throw new ArgumentException("Field cannot be null or empty.", fieldName);
+
+            if (value.Length > 10000)
+                throw new ArgumentOutOfRangeException(fieldName, "Field exceeds the maximum allowed length of 10,000 characters.");
+        }
+
+        private static void ValidateTerm(Term value, string fieldName)
+        {
+            if (value == null)
+                throw new ArgumentException("Field cannot be null.", fieldName);
+
+            if (value.Label == "")
+                throw new ArgumentException("Field cannot be empty.", $"{fieldName}.Label");
+
+            if (value.Guid == "")
+                throw new ArgumentException("Field cannot be empty.", $"{fieldName}.Guid");
+        }
+
+        private static void ValidateTerms(Term[] value, string fieldName)
+        {
+            if (value == null)
+                throw new ArgumentException("Field cannot be null.", fieldName);
+
+            for (var i = 0; i < value.Length; i++)
+            {
+                if (value[i].Label == "")
+                    throw new ArgumentException("Field cannot be empty.", $"{fieldName}[{i}].Label");
+
+                if (value[i].Guid == "")
+                    throw new ArgumentException("Field cannot be empty.", $"{fieldName}[{i}].Guid");
+            }
+        }
+
+        private static void ValidateDateTime(DateTime? value, string fieldName)
+        {
+            if (value == null)
+                throw new ArgumentException("Field cannot be null.", fieldName);
+
+            if (value.Value.ToUniversalTime() > DateTime.UtcNow.AddDays(1))
+                throw new ArgumentException("Field must be at least 1 day into the future.", fieldName);
+        }
+
+        private static void ValidateNumber(int value, string fieldName)
+        {
+            if (value < 0)
+                throw new ArgumentException("Field must be a positive number", fieldName);
         }
     }
 
