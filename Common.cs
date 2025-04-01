@@ -99,8 +99,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateLookupId(opportunity.ClassificationCodeId, "ClassificationCodeId");
             ValidateLookupId(opportunity.ClassificationLevelId, "ClassificationLevelId");
             ValidateNumber(opportunity.NumberOfOpportunities, "NumberOfOpportunities");
-            ValidateLookupId(opportunity.DurationId, "DurationId");
-            ValidateNumber(opportunity.DurationQuantity, "DurationQuantity");
             ValidateDateTime(opportunity.ApplicationDeadlineDate, "ApplicationDeadlineDate");
             ValidateMultiTextField(opportunity.JobDescriptionEn, "JobDescriptionEn");
             ValidateMultiTextField(opportunity.JobDescriptionFr, "JobDescriptionFr");
@@ -109,6 +107,13 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateLookupId(opportunity.LanguageRequirementId, "LanguageRequirementId");
             ValidateLookupId(opportunity.WorkArrangementId, "WorkArrangementId");
             ValidateLookupId(opportunity.CityId, "CityId");
+
+            // If the opportunity is a Deployment it doesn't need a DurationId or DurationQuantity
+            if (!opportunity.JobType.Any(j => j.Guid == config["deploymentJobTypeId"]))
+            {
+                ValidateLookupId(opportunity.DurationId, "DurationId");
+                ValidateNumber(opportunity.DurationQuantity, "DurationQuantity");
+            }
 
             if (opportunity.SkillIds == null || opportunity.SkillIds.Length == 0)
                 throw new ArgumentException("Field cannot be null or empty.", "SkillIds");
@@ -121,6 +126,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             if (opportunity.ApprovedStaffing == null)
                 throw new ArgumentException("Field cannot be null.", "ApprovedStaffing");
 
+            // If a job is not Bilingual it doesn't need LanguageComprehension
             if (opportunity.LanguageRequirementId == config["bilingualLanguageRequirementId"])
             {
                 ValidateTextField(opportunity.LanguageComprehension, "LanguageComprehension");

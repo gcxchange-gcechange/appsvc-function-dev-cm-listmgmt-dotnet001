@@ -50,6 +50,7 @@ n/a
 | programAreaHiddenColName | The name of the hidden column that corresponds to the metadata column ProgramArea |
 | durationMonthId          | The Id of the month item in the Duration list. Used to calculate DurationInDays   |
 | bilingualLanguageRequirementId | The Id of the Bilingual item in the LanguageRequirement list. Used for validation |
+| deploymentJobTypeId	   | The Id of the Deployment term. Used for validation.							   |
 
 ## Version history
 
