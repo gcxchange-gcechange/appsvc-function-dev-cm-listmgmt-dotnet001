@@ -45,7 +45,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
                             {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
                             {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
-                            {"DurationLookupId", opportunity.DurationId},
+                            {"DurationLookupId", opportunity.DurationId != string.Empty ? opportunity.DurationId : "0"},
                             {"ApplicationDeadlineDate", opportunity.ApplicationDeadlineDate.Value.ToUniversalTime()},
                             {"JobDescriptionEn", opportunity.JobDescriptionEn},
                             {"JobDescriptionFr", opportunity.JobDescriptionFr},
