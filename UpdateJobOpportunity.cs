@@ -17,9 +17,11 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         }
 
         [Function("UpdateJobOpportunity")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
             _logger.LogInformation("UpdateJobOpportunity received a request.");
+
+            StatusCodeResult result = new OkResult();
 
             try
             {
@@ -27,27 +29,19 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
                 dynamic data = JsonConvert.DeserializeObject(requestBody);
                 string itemId = data?.ItemId;
-
                 var listItem = Common.BuildListItem(requestBody, _logger);
+                string ContactEmail = listItem.Fields.AdditionalData["ContactEmail"].ToString();
 
-                // not sure this is a good idea
-
-                //foreach (var field in listItem.Fields.AdditionalData)
-                //{
-                //    if (field.Value == null)
-                //    {
-                //        listItem.Fields.AdditionalData.Remove(field);
-                //    }
-                //}
-                //_logger.LogWarning("-------------------------------");
-                //foreach (var field in listItem.Fields.AdditionalData)
-                //{
-                //    _logger.LogWarning($"{field.Key} = {field.Value}");
-                //    _logger.LogWarning($"IsNull? {field.Value == null}");
-                //}
-
-                GraphServiceClient client = Common.GetClient(_logger);
-                await client.Sites[config.SiteId].Lists[config.ListId].Items[itemId].Fields.PatchAsync(listItem.Fields);
+                if (ClaimsPrincipalParser.CanUpdate(req, ContactEmail, _logger))
+                {
+                    GraphServiceClient client = Common.GetClient(_logger);
+                    await client.Sites[config.SiteId].Lists[config.ListId].Items[itemId].Fields.PatchAsync(listItem.Fields);
+                }
+                else
+                {
+                    _logger.LogWarning($"Unauthorized update attempted by logged in user {ClaimsPrincipalParser.GetUpn(req, _logger)} on JobOpportunityId {itemId}.");
+                    result = new BadRequestResult();
+                }
             }
             catch (Exception e)
             {
@@ -58,8 +52,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             _logger.LogInformation("UpdateJobOpportunity processed a request.");
 
-            return new OkResult();
+            return result;
         }
     }
-
 }
