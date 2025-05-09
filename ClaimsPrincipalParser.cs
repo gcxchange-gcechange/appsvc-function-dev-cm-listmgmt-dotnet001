@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
+﻿using System.Security.Claims;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -32,29 +29,46 @@ public static class ClaimsPrincipalParser
 
     public static bool CanUpdate(HttpRequest req, string ContactEmail, ILogger logger)
     {
-        string Upn = GetUpn(req, logger);
-        return (Upn.ToLower() == ContactEmail.ToLower());
+        string UserEmail = GetUserEmail(req, logger);
+        return UserEmail.ToLower() == ContactEmail.ToLower();
     }
 
-    public static string GetUpn(HttpRequest req, ILogger logger)
+    public static string GetUserEmail(HttpRequest req, ILogger logger)
     {
         ClaimsPrincipal principal = ClaimsPrincipalParser.Parse(req);
 
-        string upn;
+        string email;
 
         try
         {
+            // non-guest user email is stored in the Upn claim
+            Claim claim = principal.FindFirst(ClaimTypes.Upn);
 
-            Claim upnClaim = principal.FindFirst(ClaimTypes.Upn);
-            upn = upnClaim?.Value.ToString();
+            if (claim == null)
+            {
+                // look for guest user email under a different claim
+                claim = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
+            }
+
+            if (claim != null)
+            {
+                email = claim?.Value.ToString();
+            }
+            else
+            {
+                email = "";
+                logger.LogWarning("Could not get email address from claims.");
+            }     
         }
         catch (Exception ex)
         {
-            upn = "";
+            email = "";
             logger.LogInformation($"Error getting Upn claim: {ex.Message}");
         }
 
-        return upn;
+        logger.LogInformation($"email: {email}");
+
+        return email;
     }
 
     public static ClaimsPrincipal Parse(HttpRequest req)
