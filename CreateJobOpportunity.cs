@@ -16,7 +16,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         }
 
         [Function("CreateJobOpportunity")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
             _logger.LogInformation("CreateJobOpportunity received a request.");
 
