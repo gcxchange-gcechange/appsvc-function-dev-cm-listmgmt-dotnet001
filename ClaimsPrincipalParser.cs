@@ -66,8 +66,6 @@ public static class ClaimsPrincipalParser
             logger.LogInformation($"Error getting Upn claim: {ex.Message}");
         }
 
-        logger.LogInformation($"email: {email}");
-
         return email;
     }
 
