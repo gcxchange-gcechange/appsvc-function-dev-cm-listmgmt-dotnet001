@@ -39,7 +39,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 }
                 else
                 {
-                    _logger.LogWarning($"Unauthorized update attempted by logged in user {ClaimsPrincipalParser.GetUpn(req, _logger)} on JobOpportunityId {itemId}.");
+                    _logger.LogWarning($"Unauthorized update attempted by logged in user {ClaimsPrincipalParser.GetUserEmail(req, _logger)} on JobOpportunityId {itemId}.");
                     result = new BadRequestResult();
                 }
             }
