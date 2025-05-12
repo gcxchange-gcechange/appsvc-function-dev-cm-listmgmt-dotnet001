@@ -43,7 +43,10 @@ namespace xUnitTests
                 json = r.ReadToEnd();
             }
 
-            // act
+            Console.WriteLine(json);
+
+
+            // act0
             var listItem = BuildListItem(json, _logger);
 
             // assert
