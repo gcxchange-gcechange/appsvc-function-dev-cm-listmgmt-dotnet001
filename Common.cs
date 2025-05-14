@@ -26,8 +26,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 ValidateJobOpportunity(opportunity);
 
-                int durationInDays = opportunity.DurationId == config["durationMonthId"] ? opportunity.DurationQuantity * 30 : opportunity.DurationQuantity * 360;
-
                 var listItem = new ListItem
                 {
                     Fields = new FieldValueSet
@@ -59,7 +57,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"SkillsLookupId", opportunity.SkillIds},
                             {"CityLookupId", opportunity.CityId},
                             {"DurationQuantity", opportunity.DurationQuantity},
-                            {"DurationInDays", durationInDays}
+                            {"DurationInDays", CalculateDurationInDays(opportunity, config)}
                         }
                     }
                 };
@@ -82,6 +80,35 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 return null;
             }
+        }
+
+        private static int CalculateDurationInDays(JobOpportunity opportunity, IConfigurationRoot config)
+        {
+            var durationId = int.Parse(opportunity.DurationId);
+            var yearId = int.Parse(config["durationYearId"]);
+            var monthId = int.Parse(config["durationMonthId"]);
+            var weekId = int.Parse(config["durationWeekId"]);
+
+            int durationInDays = -1;
+
+            if (durationId == yearId)
+            {
+                durationInDays = (int)Math.Round(opportunity.DurationQuantity * 365.25, MidpointRounding.AwayFromZero);
+            }
+            else if (durationId == monthId)
+            {
+                durationInDays = (int)Math.Round(opportunity.DurationQuantity * (365.25 / 12.0), MidpointRounding.AwayFromZero);
+            }
+            else if (durationId == weekId)
+            {
+                durationInDays = (int)Math.Round(opportunity.DurationQuantity * (365.25 / 52.0), MidpointRounding.AwayFromZero);
+            }
+            else
+            {
+                throw new ArgumentException("Failed to map to one of the following: [durationYearId, durationMonthId, durationWeekId]", "DurationId");
+            }
+
+            return durationInDays;
         }
 
         private static void ValidateJobOpportunity(JobOpportunity opportunity)
