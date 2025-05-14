@@ -85,19 +85,16 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         private static int CalculateDurationInDays(JobOpportunity opportunity, IConfigurationRoot config)
         {
             var durationId = int.Parse(opportunity.DurationId);
-            var yearId = int.Parse(config["durationYearId"]);
-            var monthId = int.Parse(config["durationMonthId"]);
-            var weekId = int.Parse(config["durationWeekId"]);
 
-            if (durationId == yearId)
+            if (durationId == int.Parse(config["durationYearId"]))
             {
                 return 365 * opportunity.DurationQuantity;
             }
-            else if (durationId == monthId)
+            else if (durationId == int.Parse(config["durationMonthId"]))
             {
                 return (int)Math.Round(365.0 / 12.0 * opportunity.DurationQuantity, MidpointRounding.AwayFromZero);
             }
-            else if (durationId == weekId)
+            else if (durationId == int.Parse(config["durationWeekId"]))
             {
                 return (int)Math.Round(365.0 / 52.0 * opportunity.DurationQuantity, MidpointRounding.AwayFromZero);
             }
