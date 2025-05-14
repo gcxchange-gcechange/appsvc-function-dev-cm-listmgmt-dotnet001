@@ -39,7 +39,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"JobTitleEn", opportunity.JobTitleEn},
                             {"JobTitleFr", opportunity.JobTitleFr},
                             {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
-                            {config["programAreaHiddenColName"],  opportunity.ProgramArea.ToString()},
+                            {config["programAreaHiddenColName"], opportunity.ProgramArea.ToString()},
                             {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
                             {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
                             {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
