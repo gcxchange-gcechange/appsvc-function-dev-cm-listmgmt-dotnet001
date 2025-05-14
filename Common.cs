@@ -89,26 +89,21 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             var monthId = int.Parse(config["durationMonthId"]);
             var weekId = int.Parse(config["durationWeekId"]);
 
-            int durationInDays = -1;
-
             if (durationId == yearId)
             {
-                durationInDays = (int)Math.Round(opportunity.DurationQuantity * 365.25, MidpointRounding.AwayFromZero);
+                return 365 * opportunity.DurationQuantity;
             }
             else if (durationId == monthId)
             {
-                durationInDays = (int)Math.Round(opportunity.DurationQuantity * (365.25 / 12.0), MidpointRounding.AwayFromZero);
+                return (int)Math.Round(365.0 / 12.0 * opportunity.DurationQuantity, MidpointRounding.AwayFromZero);
             }
             else if (durationId == weekId)
             {
-                durationInDays = (int)Math.Round(opportunity.DurationQuantity * (365.25 / 52.0), MidpointRounding.AwayFromZero);
-            }
-            else
-            {
-                throw new ArgumentException("Failed to map to one of the following: [durationYearId, durationMonthId, durationWeekId]", "DurationId");
+                return (int)Math.Round(365.0 / 52.0 * opportunity.DurationQuantity, MidpointRounding.AwayFromZero);
             }
 
-            return durationInDays;
+            throw new ArgumentException("Failed to map to one of the following: [durationYearId, durationMonthId, durationWeekId]", "DurationId");
+            
         }
 
         private static void ValidateJobOpportunity(JobOpportunity opportunity)
