@@ -26,8 +26,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 ValidateJobOpportunity(opportunity);
 
-                int durationInDays = opportunity.DurationId == config["durationMonthId"] ? opportunity.DurationQuantity * 30 : opportunity.DurationQuantity * 360;
-
                 var listItem = new ListItem
                 {
                     Fields = new FieldValueSet
@@ -41,7 +39,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"JobTitleEn", opportunity.JobTitleEn},
                             {"JobTitleFr", opportunity.JobTitleFr},
                             {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
-                            {config["programAreaHiddenColName"],  opportunity.ProgramArea.ToString()},
+                            {config["programAreaHiddenColName"], opportunity.ProgramArea.ToString()},
                             {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
                             {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
                             {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
@@ -59,7 +57,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"SkillsLookupId", opportunity.SkillIds},
                             {"CityLookupId", opportunity.CityId},
                             {"DurationQuantity", opportunity.DurationQuantity},
-                            {"DurationInDays", durationInDays}
+                            {"DurationInDays", CalculateDurationInDays(opportunity, config)}
                         }
                     }
                 };
@@ -82,6 +80,27 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 return null;
             }
+        }
+
+        private static int CalculateDurationInDays(JobOpportunity opportunity, IConfigurationRoot config)
+        {
+            var durationId = int.Parse(opportunity.DurationId);
+
+            if (durationId == int.Parse(config["durationYearId"]))
+            {
+                return 365 * opportunity.DurationQuantity;
+            }
+            else if (durationId == int.Parse(config["durationMonthId"]))
+            {
+                return (int)Math.Round(365.0 / 12.0 * opportunity.DurationQuantity, MidpointRounding.AwayFromZero);
+            }
+            else if (durationId == int.Parse(config["durationWeekId"]))
+            {
+                return (int)Math.Round(365.0 / 52.0 * opportunity.DurationQuantity, MidpointRounding.AwayFromZero);
+            }
+
+            throw new ArgumentException("Failed to map to one of the following: [durationYearId, durationMonthId, durationWeekId]", "DurationId");
+            
         }
 
         private static void ValidateJobOpportunity(JobOpportunity opportunity)
