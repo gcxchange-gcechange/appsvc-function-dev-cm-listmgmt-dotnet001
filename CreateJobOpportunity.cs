@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
+using Microsoft.Graph.Models;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
 {
@@ -22,6 +23,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             bool _exception = false;
 
+            string listItemId;
+
             try
             {
                 Config config = new Config();
@@ -29,7 +32,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 GraphServiceClient client = Common.GetClient(_logger);
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(listItem.Fields.AdditionalData);
 
-                await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
+                var newListItem = await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
+                listItemId = newListItem.Id;
             }
             catch (Exception e)
             {
@@ -37,13 +41,15 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 _logger.LogError(e.Message);
                 if (e.InnerException is not null) _logger.LogError(e.InnerException.Message);
                 _logger.LogError(e.StackTrace);
+                listItemId = "";
             }
 
+            _logger.LogInformation($"listItemId = {listItemId}");
             _logger.LogInformation("CreateJobOpportunity processed a request.");
 
             if (!_exception)
             {
-                return new OkResult();
+                return new OkObjectResult(listItemId);
             } else
             {
                 return new BadRequestResult();
