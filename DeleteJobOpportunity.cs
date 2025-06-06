@@ -21,6 +21,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         {
             _logger.LogInformation("DeleteJobOpportunity received a request.");
 
+            StatusCodeResult result = new OkResult();
+
             try
             {
                 Config config = new Config();
@@ -35,12 +37,24 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 {
                     try
                     {
-                        await client.Sites[config.SiteId].Lists[config.ListId].Items[id.Trim()].DeleteAsync();
-                        _logger.LogInformation($"Deleted list item with ID: {id.Trim()}");
+                        var item = await client.Sites[config.SiteId].Lists[config.ListId].Items[id.Trim()].GetAsync();
+                        string email = item.Fields.AdditionalData["ContactEmail"].ToString();
+
+                        if (ClaimsPrincipalParser.CanUpdate(req, email, _logger))
+                        {
+                            await client.Sites[config.SiteId].Lists[config.ListId].Items[id.Trim()].DeleteAsync();
+                            _logger.LogInformation($"Deleted list item with ID: {id.Trim()}");
+                            continue;
+                        }
+                        
+                        _logger.LogWarning($"Unable to delete list item with ID: {id.Trim()}");
+                        _logger.LogWarning($"Email didn't match. Got \"{email}\" expected \"{ClaimsPrincipalParser.GetUserEmail(req, _logger)}\"");
                     }
                     catch (Exception e)
                     {
-                        _logger.LogInformation($"Failed to delete list item with ID: {id.Trim()}");
+                        _logger.LogError($"Failed to delete list item with ID: {id.Trim()}");
+                        _logger.LogError(e.Message);
+                        if (e.InnerException is not null) _logger.LogError(e.InnerException.Message);
                     }
                 }
             }
@@ -49,11 +63,12 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 _logger.LogError(e.Message);
                 if (e.InnerException is not null) _logger.LogError(e.InnerException.Message);
                 _logger.LogError(e.StackTrace);
+                result = new StatusCodeResult(500);
             }
 
             _logger.LogInformation("DeleteJobOpportunity processed a request.");
 
-            return new OkResult();
+            return result;
         }
     }
 }
