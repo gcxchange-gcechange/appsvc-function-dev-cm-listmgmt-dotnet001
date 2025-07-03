@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Newtonsoft.Json;
+using System.Diagnostics.Eventing.Reader;
 using System.Text.RegularExpressions;
 using static appsvc_function_dev_cm_listmgmt_dotnet001.Auth;
 
@@ -26,6 +27,10 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 ValidateJobOpportunity(opportunity);
 
+                // data cleanup: if DurationId is empty then give it a value of 0
+                if (opportunity.DurationId == string.Empty)
+                    opportunity.DurationId = "0";
+
                 var listItem = new ListItem
                 {
                     Fields = new FieldValueSet
@@ -43,7 +48,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
                             {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
                             {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
-                            {"DurationLookupId", opportunity.DurationId != string.Empty ? opportunity.DurationId : "0"},
+                            {"DurationLookupId", opportunity.DurationId},
                             {"ApplicationDeadlineDate", opportunity.ApplicationDeadlineDate.Value.ToUniversalTime()},
                             {"JobDescriptionEn", opportunity.JobDescriptionEn},
                             {"JobDescriptionFr", opportunity.JobDescriptionFr},
@@ -62,13 +67,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                     }
                 };
 
-                //logger.LogWarning($"listItem.Fields.AdditionalData.Count = {listItem.Fields.AdditionalData.Count}");
-                //foreach (var field in listItem.Fields.AdditionalData)
-                //{
-                //    logger.LogWarning($"{field.Key} = {field.Value}");
-                //    logger.LogWarning($"IsNull? {field.Value == null}");
-                //}
-
                 return listItem;
             }
             catch (Exception e)
@@ -86,7 +84,11 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         {
             var durationId = int.Parse(opportunity.DurationId);
 
-            if (durationId == int.Parse(config["durationYearId"]))
+            if (durationId == 0)
+            {
+                return 0;
+            }
+            else if (durationId == int.Parse(config["durationYearId"]))
             {
                 return 365 * opportunity.DurationQuantity;
             }
@@ -100,7 +102,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             }
 
             throw new ArgumentException("Failed to map to one of the following: [durationYearId, durationMonthId, durationWeekId]", "DurationId");
-            
         }
 
         private static void ValidateJobOpportunity(JobOpportunity opportunity)
