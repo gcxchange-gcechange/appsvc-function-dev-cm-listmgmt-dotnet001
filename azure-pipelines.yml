@@ -48,10 +48,12 @@ stages:
           -e NVD_API_KEY=$(NVD_API_KEY) \
           -v $(Build.SourcesDirectory):/src \
           -v $(Build.ArtifactStagingDirectory):/report \
-          owasp/dependency-check:latest \
+          owasp/dependency-check:12.1.0 \
           --project "AzureFunctionApp" \
           --scan /src \
           --format HTML \
+          --enableRetired \ # Microsoft.* NuGet dependencies are ignored, so we need this 
+          --failOnCVSS 11 \ # ... and this. Since there is nothing to scan in this case, it won't fail.
           --out /report \
           --log /report/debug.log
       displayName: 'Run OWASP Dependency-Check via Docker'
