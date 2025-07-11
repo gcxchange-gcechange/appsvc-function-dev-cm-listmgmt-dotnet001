@@ -72,6 +72,7 @@ stages:
       displayName: 'Verify NVD_API_KEY'
 
     - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/dependency
         docker run --rm \
           -e NVD_API_KEY=$(NVD_API_KEY) \
           -v $(Build.SourcesDirectory):/src \
@@ -82,9 +83,11 @@ stages:
           --nvdApiKey "$(NVD_API_KEY)" \
           --format HTML \
           --enableRetired \
-          --failOnCVSS 11 \
           --out /report \
-          --log /report/debug.log || echo "Dependency-Check exited with code $?"
+          --log /report/debug.log || true
+
+        echo "Report contents:"
+        ls -lah $(Build.ArtifactStagingDirectory)/dependency
       displayName: 'Run OWASP Dependency-Check'
 
     - task: PublishBuildArtifacts@1
