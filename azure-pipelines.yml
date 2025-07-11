@@ -51,6 +51,7 @@ stages:
       displayName: 'Install Gitleaks'
 
     - script: |
+        mkdir -p $(Build.ArtifactStagingDirectory)/gitleaks
         gitleaks detect \
           --source $(Build.SourcesDirectory) \
           --report-path $(Build.ArtifactStagingDirectory)/gitleaks/gitleaks-report.json \
