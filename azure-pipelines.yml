@@ -6,6 +6,7 @@ pr:
   branches:
     include:
       - main
+      - master
 
 pool:
   vmImage: 'ubuntu-latest'
@@ -33,7 +34,7 @@ stages:
         dotnet restore
       displayName: 'Restore NuGet Packages'
 
-    # Semgrep
+    # Semgrep  
     - script: |
         pip install semgrep
       displayName: 'Install Semgrep'
