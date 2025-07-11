@@ -34,6 +34,7 @@
     <PackageReference Include="Microsoft.Extensions.Azure" Version="1.7.3" />
     <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="8.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="5.61.0" />
+    <PackageReference Include="PixiEditor.ColorPicker" Version="3.4.2" />
   </ItemGroup>
   <ItemGroup>
     <None Update="host.json">
