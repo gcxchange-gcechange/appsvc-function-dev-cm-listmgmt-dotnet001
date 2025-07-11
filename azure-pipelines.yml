@@ -47,7 +47,7 @@ stages:
         docker run --rm \
           -v $(Build.SourcesDirectory):/src \
           -v $(Build.ArtifactStagingDirectory):/report \
-          owasp/dependency-check:8.4.0 \
+          owasp/dependency-check:latest \
           --project "AzureFunctionApp" \
           --scan /src \
           --format HTML \
