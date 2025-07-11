@@ -29,6 +29,10 @@ stages:
 
     - checkout: self
 
+    - script: |
+        dotnet restore
+      displayName: 'Restore NuGet Packages'
+
     # SEMGREP
     - script: |
         pip install semgrep
@@ -38,6 +42,7 @@ stages:
         semgrep scan --config auto --error
       displayName: 'Run Semgrep Scan'
 
+    # DEPENDENCY-CHECK via Docker
     - script: |
         docker run --rm \
           -v $(Build.SourcesDirectory):/src \
@@ -46,7 +51,8 @@ stages:
           --project "AzureFunctionApp" \
           --scan /src \
           --format HTML \
-          --out /report
+          --out /report \
+          --log /report/debug.log
       displayName: 'Run OWASP Dependency-Check via Docker'
 
     - task: PublishBuildArtifacts@1
@@ -72,7 +78,7 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
         ArtifactName: 'GitleaksReport'
 
-    # OWASP ZAP
+    # OWASP ZAP (optional, requires accessible endpoint)
     - script: |
         docker run -v $(Build.SourcesDirectory):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py \
           -t https://your-function-url.azurewebsites.net \
@@ -82,7 +88,7 @@ stages:
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish ZAP Report'
-      condition: false  # Same as above
+      condition: false
       inputs:
         PathtoPublish: '$(Build.SourcesDirectory)/zap-report.html'
         ArtifactName: 'ZAPReport'
