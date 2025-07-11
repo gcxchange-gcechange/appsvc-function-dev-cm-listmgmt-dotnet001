@@ -42,12 +42,35 @@ stages:
         semgrep scan --config auto --error
       displayName: 'Run Semgrep Scan'
 
+    # Gitleaks
+    - script: |
+        curl -s https://api.github.com/repos/gitleaks/gitleaks/releases/latest \
+          | grep "browser_download_url.*linux_amd64\.tar\.gz" \
+          | cut -d '"' -f 4 \
+          | wget -i - -O gitleaks.tar.gz
+
+        tar -xzf gitleaks.tar.gz
+        chmod +x gitleaks
+        sudo mv gitleaks /usr/local/bin/gitleaks
+      displayName: 'Install Gitleaks'
+
+
+    - script: |
+        gitleaks detect --source $(Build.SourcesDirectory) --report-path $(Build.ArtifactStagingDirectory)/gitleaks-report.json --no-banner
+      displayName: 'Run Gitleaks'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Gitleaks Report'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
+        ArtifactName: 'GitleaksReport'
+
     # OWASP dependency scan via Docker
     - script: |
         docker run --rm \
           --env NVD_API_KEY=$(NVD_API_KEY) \
           alpine sh -c 'echo "NVD_API_KEY inside container is: ${NVD_API_KEY:+set}"'
-      displayName: 'Verify NVD_API_KEY accessible in docker'
+      displayName: 'Verify NVD_API_KEY'
 
     - script: |
         # Run scan even if there are no dependencies
@@ -70,23 +93,6 @@ stages:
       inputs:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'DependencyReport'
-
-    # Gitleaks
-    - script: |
-        curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
-        chmod +x gitleaks
-        sudo mv gitleaks /usr/local/bin
-      displayName: 'Install Gitleaks'
-
-    - script: |
-        gitleaks detect --source $(Build.SourcesDirectory) --report-path $(Build.ArtifactStagingDirectory)/gitleaks-report.json --no-banner
-      displayName: 'Run Gitleaks'
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Gitleaks Report'
-      inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
-        ArtifactName: 'GitleaksReport'
 
     # OWASP ZAP (optional, requires accessible endpoint)
     - script: |
