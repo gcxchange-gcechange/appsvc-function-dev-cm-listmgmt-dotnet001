@@ -39,20 +39,20 @@ stages:
       displayName: 'Run Semgrep Scan'
 
     - script: |
-        cd $(Agent.TempDirectory)
-        curl -sSL -o dependency-check.tar.gz https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.0/dependency-check-8.4.0-release.tar.gz
-        mkdir dependency-check && tar -xzf dependency-check.tar.gz -C dependency-check --strip-components=1
-        ./dependency-check/bin/dependency-check.sh \
-          --project AzureFunctionApp \
-          --scan $(Build.SourcesDirectory) \
-          --out $(Build.ArtifactStagingDirectory)/dependency-report \
-          --format HTML
-      displayName: 'Run OWASP Dependency-Check'
+        docker run --rm \
+          -v $(Build.SourcesDirectory):/src \
+          -v $(Build.ArtifactStagingDirectory):/report \
+          owasp/dependency-check:8.4.0 \
+          --project "AzureFunctionApp" \
+          --scan /src \
+          --format HTML \
+          --out /report
+      displayName: 'Run OWASP Dependency-Check via Docker'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Dependency-Check Report'
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/dependency-report'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
         ArtifactName: 'DependencyReport'
 
     # GITLEAKS
