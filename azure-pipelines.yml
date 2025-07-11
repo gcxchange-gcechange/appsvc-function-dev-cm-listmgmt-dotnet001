@@ -53,14 +53,14 @@ stages:
     - script: |
         gitleaks detect \
           --source $(Build.SourcesDirectory) \
-          --report-path $(Build.ArtifactStagingDirectory)/gitleaks-report.json \
+          --report-path $(Build.ArtifactStagingDirectory)/gitleaks/gitleaks-report.json \
           --no-banner
       displayName: 'Run Gitleaks'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Gitleaks Report'
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/gitleaks'
         ArtifactName: 'GitleaksReport'
 
     # OWASP dependency scan via Docker
@@ -71,25 +71,25 @@ stages:
       displayName: 'Verify NVD_API_KEY'
 
     - script: |
-        # Run scan even if there are no dependencies
         docker run --rm \
           -e NVD_API_KEY=$(NVD_API_KEY) \
           -v $(Build.SourcesDirectory):/src \
-          -v $(Build.ArtifactStagingDirectory):/report \
+          -v $(Build.ArtifactStagingDirectory)/dependency:/report \
           owasp/dependency-check:latest \
           --project "AzureFunctionApp" \
           --scan /src \
+          --nvdApiKey "$(NVD_API_KEY)" \
           --format HTML \
           --enableRetired \
           --failOnCVSS 11 \
           --out /report \
           --log /report/debug.log || echo "Dependency-Check exited with code $?"
-      displayName: 'Run OWASP Dependency-Check (ignore exit 12)'
+      displayName: 'Run OWASP Dependency-Check'
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Dependency-Check Report'
       inputs:
-        PathtoPublish: '$(Build.ArtifactStagingDirectory)'
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/dependency'
         ArtifactName: 'DependencyReport'
 
     # OWASP ZAP (optional, requires accessible endpoint)
