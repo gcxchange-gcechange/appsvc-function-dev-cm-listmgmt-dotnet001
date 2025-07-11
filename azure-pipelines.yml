@@ -1,0 +1,84 @@
+# Security Scan
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  DOTNET_VERSION: '8.x'
+
+stages:
+- stage: SecurityScans
+  displayName: Security Scans
+  jobs:
+  - job: RunScans
+    displayName: Run Semgrep, Gitleaks, Dependency-Check
+    steps:
+
+    - task: UseDotNet@2
+      displayName: 'Install .NET SDK'
+      inputs:
+        packageType: sdk
+        version: $(DOTNET_VERSION)
+
+    - checkout: self
+
+    # SEMGREP
+    - script: |
+        pip install semgrep
+      displayName: 'Install Semgrep'
+
+    - script: |
+        semgrep scan --config auto --error
+      displayName: 'Run Semgrep Scan'
+
+    - script: |
+        mkdir dependency-check && cd dependency-check
+        curl -L -o dc.zip https://github.com/jeremylong/DependencyCheck/releases/latest/download/dependency-check-8.4.0-release.zip
+        unzip dc.zip && cd dependency-check-*
+        ./bin/dependency-check.sh --project AzureFunctionApp --scan $(Build.SourcesDirectory) --out $(Build.ArtifactStagingDirectory)/dependency-report --format HTML
+      displayName: 'Run OWASP Dependency-Check'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Dependency-Check Report'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/dependency-report'
+        ArtifactName: 'DependencyReport'
+
+    # GITLEAKS
+    - script: |
+        curl -sSL https://github.com/gitleaks/gitleaks/releases/latest/download/gitleaks-linux-amd64 -o gitleaks
+        chmod +x gitleaks
+        sudo mv gitleaks /usr/local/bin
+      displayName: 'Install Gitleaks'
+
+    - script: |
+        gitleaks detect --source $(Build.SourcesDirectory) --report-path $(Build.ArtifactStagingDirectory)/gitleaks-report.json --no-banner
+      displayName: 'Run Gitleaks'
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish Gitleaks Report'
+      inputs:
+        PathtoPublish: '$(Build.ArtifactStagingDirectory)/gitleaks-report.json'
+        ArtifactName: 'GitleaksReport'
+
+    # OWASP ZAP
+    - script: |
+        docker run -v $(Build.SourcesDirectory):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py \
+          -t https://your-function-url.azurewebsites.net \
+          -r zap-report.html
+      displayName: 'Run ZAP Baseline Scan'
+      condition: false  # Change to 'true' or remove this line to enable
+
+    - task: PublishBuildArtifacts@1
+      displayName: 'Publish ZAP Report'
+      condition: false  # Same as above
+      inputs:
+        PathtoPublish: '$(Build.SourcesDirectory)/zap-report.html'
+        ArtifactName: 'ZAPReport'
