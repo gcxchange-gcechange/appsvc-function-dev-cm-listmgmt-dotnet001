@@ -96,13 +96,20 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/dependency'
         ArtifactName: 'DependencyReport'
 
-    # OWASP ZAP (optional, requires accessible endpoint)
+    # OWASP ZAP (turned off for now)
     - script: |
+        APP_FOLDER=$(basename $(find $(Build.SourcesDirectory) -mindepth 1 -maxdepth 1 -type d))
+        echo "##vso[task.setvariable variable=FunctionFolder]$APP_FOLDER"
+      displayName: 'Extract Function App Folder Name'
+      condition: false  
+
+    - script: |
+        echo "Running OWASP ZAP scan on https://$(FunctionFolder).azurewebsites.net"
         docker run -v $(Build.SourcesDirectory):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py \
-          -t https://your-function-url.azurewebsites.net \
+          -t https://$(FunctionFolder).azurewebsites.net \
           -r zap-report.html
       displayName: 'Run ZAP Baseline Scan'
-      condition: false  # Change to 'true' or remove this line to enable
+      condition: false  
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish ZAP Report'
