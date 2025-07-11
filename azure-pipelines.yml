@@ -12,7 +12,6 @@ pool:
 
 variables:
   DOTNET_VERSION: '8.x'
-  NVD_API_KEY: $(NVD_API_KEY)
 
 stages:
 - stage: SecurityScans
