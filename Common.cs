@@ -151,7 +151,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             {
                 ValidateTextField(opportunity.LanguageComprehension, "LanguageComprehension");
 
-                Regex langCompRegex = new Regex(@"^[A-C]{3}-[A-C]{3}$");
+                Regex langCompRegex = new Regex(@"^[A-C,E]{3}-[A-C,E]{3}$");
                 if (!langCompRegex.IsMatch(opportunity.LanguageComprehension))
                     throw new ArgumentException("Field is formatted incorrectly.", "LanguageComprehension");
             }
