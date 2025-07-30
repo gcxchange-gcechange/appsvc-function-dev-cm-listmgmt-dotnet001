@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
+using Newtonsoft.Json;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
 {
@@ -28,7 +29,12 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             try
             {
                 Config config = new Config();
-                var listItem = Common.BuildListItem(new StreamReader(req.Body).ReadToEnd(), _logger);
+
+                string requestBody = await new StreamReader(req.Body).ReadToEndAsync();
+                dynamic data = JsonConvert.DeserializeObject(requestBody);
+                string itemId = data?.ItemId;
+                var listItem = Common.BuildListItem(requestBody, _logger);
+
                 GraphServiceClient client = Common.GetClient(_logger);
                 string json = Newtonsoft.Json.JsonConvert.SerializeObject(listItem.Fields.AdditionalData);
 
