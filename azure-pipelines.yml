@@ -1,5 +1,3 @@
-# Security Scan
-
 trigger: none
 
 pr:
@@ -15,48 +13,8 @@ variables:
   DOTNET_VERSION: '8.x'
 
 stages:
-- stage: FrontendScan
-  displayName: Frontend Scan
-  condition: |
-    or(
-      exists('package.json'),
-      exists('tsconfig.json')
-    )
-  jobs:
-  - job: 
-    displayName: Run Dependency Scan
-    steps:
-
-    - script: |
-        npm install
-        npm audit --audit-level=high --json > npm-audit.json
-        cat npm-audit.json
-      displayName: 'Run npm audit for vulnerabilities'
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish npm audit report'
-      inputs:
-        PathtoPublish: 'npm-audit.json'
-        ArtifactName: 'NpmAuditReport'
-
-    - script: |
-        npm install -g retire
-        retire --outputformat json --outputpath retire-report.json
-      displayName: 'Run Retire.js scan'
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish Retire.js Report'
-      inputs:
-        PathtoPublish: 'retire-report.json'
-        ArtifactName: 'RetireJsReport'
-
-- stage: BackendScan
-  displayName: Backend Scans
-  condition: |
-    or(
-      exists('*.csproj'),
-      exists('*.sln')
-    )
+- stage: SecurityScans
+  displayName: Security Scans
   jobs:
   - job: RunScans
     displayName: Run Semgrep, Gitleaks, Dependency-Check
