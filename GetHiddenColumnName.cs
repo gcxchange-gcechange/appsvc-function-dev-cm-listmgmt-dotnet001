@@ -18,7 +18,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         [Function("GetHiddenColumnName")]
         public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Function, "get")] HttpRequest req)
         {
-            _logger.LogInformation("GetHiddenColumnName received a request.-2");
+            _logger.LogInformation("GetHiddenColumnName received a request.");
 
             var columnNames = new List<string>();
 
@@ -26,7 +26,9 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             {
                 Config config = new Config();
                 GraphServiceClient client = Common.GetClient(_logger);
+
                 _logger.LogInformation("Hidden culumn call");
+
                 var columns = await client
                     .Sites[config.SiteId]
                     .Lists[config.ListId]
@@ -40,18 +42,33 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 {
                     foreach (var column in columns.Value)
                     {
+                        _logger.LogInformation($"\n" +
+                            $"DisplayName: {column.DisplayName}\n" +
+                            $"Name: {column.Name}\n" +
+                            $"Id: {column.Id}\n" +
+                            $"Hidden: {column.Hidden}");
+
                         if (column.DisplayName == "JobType_0" || column.DisplayName == "ProgramArea_0")
                         {
                             var columnName = $"{column.DisplayName} - {column.Name}";
 
                             columnNames.Add(columnName);
 
-                            _logger.LogInformation(columnName);
-
-                            if (columnNames.Count == 2)
-                                break;
+                            //if (columnNames.Count == 2)
+                            //    break;
                         }
                     }
+                }
+                else
+                {
+                    _logger.LogWarning("No columns found!");
+                }
+
+                _logger.LogInformation($"Found {columnNames.Count} of 2 hidden columns.");
+
+                foreach (var column in columnNames)
+                {
+                    _logger.LogInformation(column);
                 }
             }
             catch (Exception e)
