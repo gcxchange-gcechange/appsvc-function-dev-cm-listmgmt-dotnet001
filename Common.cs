@@ -25,7 +25,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
 
-                ValidateJobOpportunity(opportunity);
+               // ValidateJobOpportunity(opportunity);
 
                 // data cleanup: if DurationId is empty then give it a value of 0
                 if (opportunity.DurationId == string.Empty)
