@@ -107,15 +107,15 @@ stages:
     # Final Check
     - script: |
         failed=false
-        if [ "$(SemgrepFailed)" = "true" ]; then
+        if [ "$SemgrepFailed" = "true" ]; then
           echo "Semgrep found issues"
           failed=true
         fi
-        if [ "$(GitleaksFailed)" = "true" ]; then
+        if [ "$GitleaksFailed" = "true" ]; then
           echo "Gitleaks found issues"
           failed=true
         fi
-        if [ "$(DependencyFailed)" = "true" ]; then
+        if [ "$DependencyFailed" = "true" ]; then
           echo "Dependency-Check found issues"
           failed=true
         fi
