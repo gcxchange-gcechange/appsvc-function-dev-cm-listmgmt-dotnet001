@@ -25,7 +25,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
 
-                ValidateJobOpportunity(opportunity);
+               // ValidateJobOpportunity(opportunity);
 
                 // data cleanup: if DurationId is empty then give it a value of 0
                 if (opportunity.DurationId == string.Empty)
@@ -43,8 +43,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"ContactEmail", opportunity.ContactEmail},
                             {"JobTitleEn", opportunity.JobTitleEn},
                             {"JobTitleFr", opportunity.JobTitleFr},
-                            {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
-                            {config["programAreaHiddenColName"], opportunity.ProgramArea.ToString()},
+                            {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobTypeProd2.Select(jobType => jobType.ToString()))},
+                            {config["programAreaHiddenColName"], opportunity.ProgramAreaProdProd.ToString()},
                             {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
                             {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
                             {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
@@ -114,8 +114,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateTextField(opportunity.ContactEmail, "ContactEmail");
             ValidateTextField(opportunity.JobTitleEn, "JobTitleEn");
             ValidateTextField(opportunity.JobTitleFr, "JobTitleFr");
-            ValidateTerms(opportunity.JobType, "JobType");
-            ValidateTerm(opportunity.ProgramArea, "ProgramArea");
+            //ValidateTerms(opportunity.JobType, "JobTypeProd2");
+            //ValidateTerm(opportunity.ProgramArea, "ProgramAreaProdProd");
             ValidateLookupId(opportunity.ClassificationCodeId, "ClassificationCodeId");
             ValidateLookupId(opportunity.ClassificationLevelId, "ClassificationLevelId");
             ValidateNumber(opportunity.NumberOfOpportunities, "NumberOfOpportunities");
@@ -129,7 +129,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateLookupId(opportunity.CityId, "CityId");
 
             // If the opportunity is a Deployment it doesn't need a DurationId or DurationQuantity
-            if (!opportunity.JobType.Any(j => j.Guid == config["deploymentJobTypeId"]))
+            if (!opportunity.JobTypeProd2.Any(j => j.Guid == config["deploymentJobTypeId"]))
             {
                 ValidateLookupId(opportunity.DurationId, "DurationId");
                 ValidateNumber(opportunity.DurationQuantity, "DurationQuantity");
@@ -239,8 +239,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         public string ContactEmail;
         public string JobTitleEn;
         public string JobTitleFr;
-        public Term[] JobType;
-        public Term ProgramArea;
+        public Term[] JobTypeProd2;
+        public Term ProgramAreaProdProd;
         public string ClassificationCodeId;
         public string ClassificationLevelId;
         public int NumberOfOpportunities;
