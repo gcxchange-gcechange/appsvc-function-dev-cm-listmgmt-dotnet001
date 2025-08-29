@@ -114,8 +114,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateTextField(opportunity.ContactEmail, "ContactEmail");
             ValidateTextField(opportunity.JobTitleEn, "JobTitleEn");
             ValidateTextField(opportunity.JobTitleFr, "JobTitleFr");
-            ValidateTerms(opportunity.JobType, "JobTypeProd2");
-            ValidateTerm(opportunity.ProgramArea, "ProgramAreaProdProd");
+            //ValidateTerms(opportunity.JobType, "JobTypeProd2");
+            //ValidateTerm(opportunity.ProgramArea, "ProgramAreaProdProd");
             ValidateLookupId(opportunity.ClassificationCodeId, "ClassificationCodeId");
             ValidateLookupId(opportunity.ClassificationLevelId, "ClassificationLevelId");
             ValidateNumber(opportunity.NumberOfOpportunities, "NumberOfOpportunities");
