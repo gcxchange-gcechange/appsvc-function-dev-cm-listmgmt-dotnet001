@@ -43,8 +43,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             {"ContactEmail", opportunity.ContactEmail},
                             {"JobTitleEn", opportunity.JobTitleEn},
                             {"JobTitleFr", opportunity.JobTitleFr},
-                            {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
-                            {config["programAreaHiddenColName"], opportunity.ProgramArea.ToString()},
+                            {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobTypeProd2.Select(jobType => jobType.ToString()))},
+                            {config["programAreaHiddenColName"], opportunity.ProgramAreaProdProd.ToString()},
                             {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
                             {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
                             {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
@@ -129,7 +129,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateLookupId(opportunity.CityId, "CityId");
 
             // If the opportunity is a Deployment it doesn't need a DurationId or DurationQuantity
-            if (!opportunity.JobType.Any(j => j.Guid == config["deploymentJobTypeId"]))
+            if (!opportunity.JobTypeProd2.Any(j => j.Guid == config["deploymentJobTypeId"]))
             {
                 ValidateLookupId(opportunity.DurationId, "DurationId");
                 ValidateNumber(opportunity.DurationQuantity, "DurationQuantity");
@@ -239,8 +239,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         public string ContactEmail;
         public string JobTitleEn;
         public string JobTitleFr;
-        public Term[] JobType;
-        public Term ProgramArea;
+        public Term[] JobTypeProd2;
+        public Term ProgramAreaProdProd;
         public string ClassificationCodeId;
         public string ClassificationLevelId;
         public int NumberOfOpportunities;
