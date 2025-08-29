@@ -32,14 +32,18 @@ stages:
         dotnet restore
       displayName: 'Restore NuGet Packages'
 
-    # Semgrep  
+    # Semgrep
     - script: |
         pip install semgrep
       displayName: 'Install Semgrep'
 
     - script: |
         semgrep scan --config auto --error
+        if [ $? -ne 0 ]; then
+          echo "##vso[task.setvariable variable=SemgrepFailed]true"
+        fi
       displayName: 'Run Semgrep Scan'
+      continueOnError: true
 
     # Gitleaks
     - script: |
@@ -55,7 +59,11 @@ stages:
           --source $(Build.SourcesDirectory) \
           --report-path $(Build.ArtifactStagingDirectory)/gitleaks/gitleaks-report.json \
           --no-banner
+        if [ $? -ne 0 ]; then
+          echo "##vso[task.setvariable variable=GitleaksFailed]true"
+        fi
       displayName: 'Run Gitleaks'
+      continueOnError: true
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Gitleaks Report'
@@ -63,7 +71,7 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/gitleaks'
         ArtifactName: 'GitleaksReport'
 
-    # OWASP dependency scan via Docker
+    # OWASP Dependency-Check
     - script: |
         docker run --rm \
           --env NVD_API_KEY=$(NVD_API_KEY) \
@@ -83,11 +91,12 @@ stages:
           --format HTML \
           --enableRetired \
           --out /report \
-          --log /report/debug.log || true
-
-        echo "Report contents:"
-        ls -lah $(Build.ArtifactStagingDirectory)/dependency
+          --log /report/debug.log
+        if [ $? -ne 0 ]; then
+          echo "##vso[task.setvariable variable=DependencyFailed]true"
+        fi
       displayName: 'Run OWASP Dependency-Check'
+      continueOnError: true
 
     - task: PublishBuildArtifacts@1
       displayName: 'Publish Dependency-Check Report'
@@ -95,24 +104,26 @@ stages:
         PathtoPublish: '$(Build.ArtifactStagingDirectory)/dependency'
         ArtifactName: 'DependencyReport'
 
-    # OWASP ZAP (turned off for now)
+    # Final Check
     - script: |
-        APP_FOLDER=$(basename $(find $(Build.SourcesDirectory) -mindepth 1 -maxdepth 1 -type d))
-        echo "##vso[task.setvariable variable=FunctionFolder]$APP_FOLDER"
-      displayName: 'Extract Function App Folder Name'
-      condition: false  
+        failed=false
+        if [ "$(SemgrepFailed)" = "true" ]; then
+          echo "Semgrep found issues"
+          failed=true
+        fi
+        if [ "$(GitleaksFailed)" = "true" ]; then
+          echo "Gitleaks found issues"
+          failed=true
+        fi
+        if [ "$(DependencyFailed)" = "true" ]; then
+          echo "Dependency-Check found issues"
+          failed=true
+        fi
 
-    - script: |
-        echo "Running OWASP ZAP scan on https://$(FunctionFolder).azurewebsites.net"
-        docker run -v $(Build.SourcesDirectory):/zap/wrk/:rw -t owasp/zap2docker-stable zap-baseline.py \
-          -t https://$(FunctionFolder).azurewebsites.net \
-          -r zap-report.html
-      displayName: 'Run ZAP Baseline Scan'
-      condition: false  
-
-    - task: PublishBuildArtifacts@1
-      displayName: 'Publish ZAP Report'
-      condition: false
-      inputs:
-        PathtoPublish: '$(Build.SourcesDirectory)/zap-report.html'
-        ArtifactName: 'ZAPReport'
+        if [ "$failed" = true ]; then
+          echo "##vso[task.logissue type=error]One or more security scans failed."
+          exit 1
+        else
+          echo "All security scans passed"
+        fi
+      displayName: 'Final Check'
