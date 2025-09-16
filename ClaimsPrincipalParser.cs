@@ -35,7 +35,11 @@ public static class ClaimsPrincipalParser
 
     public static string GetUserEmail(HttpRequest req, ILogger logger)
     {
-        ClaimsPrincipal principal = ClaimsPrincipalParser.Parse(req);
+        logger.LogError($"HttpRequest req = {req}");
+
+        ClaimsPrincipal principal = ClaimsPrincipalParser.Parse(req, logger);
+
+        logger.LogError($"Is the principal null? {principal == null}");
 
         string email;
 
@@ -46,6 +50,7 @@ public static class ClaimsPrincipalParser
 
             if (claim == null)
             {
+                logger.LogError($"Upn claim is null, check for emailaddress...");
                 // look for guest user email under a different claim
                 claim = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
             }
@@ -57,19 +62,21 @@ public static class ClaimsPrincipalParser
             else
             {
                 email = "";
-                logger.LogWarning("Could not get email address from claims.");
+                logger.LogError("Could not get email address from claims.");
             }     
         }
         catch (Exception ex)
         {
             email = "";
-            logger.LogInformation($"Error getting Upn claim: {ex.Message}");
+            logger.LogError($"Error getting Upn claim: {ex.Message}");
         }
+
+        logger.LogError($"GetUserEmail: email = {email}");
 
         return email;
     }
 
-    public static ClaimsPrincipal Parse(HttpRequest req)
+    public static ClaimsPrincipal Parse(HttpRequest req, ILogger logger)
     {
         var principal = new ClientPrincipal();
 
@@ -79,7 +86,18 @@ public static class ClaimsPrincipalParser
             var decoded = Convert.FromBase64String(data);
             var json = Encoding.UTF8.GetString(decoded);
             principal = JsonSerializer.Deserialize<ClientPrincipal>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+        } else
+        {
+            logger.LogError("Could not find header x-ms-client-principal");
         }
+
+
+        logger.LogError("Headers:");
+        foreach (var h in req.Headers)
+        {
+            logger.LogError($"{h.Key} = {h.Value}");
+        }
+
 
         /** 
          *  At this point, the code can iterate through `principal.Claims` to
@@ -90,6 +108,28 @@ public static class ClaimsPrincipalParser
          *  a conversion to create a `ClaimsPrincipal` as might be used in 
          *  other .NET code.
          */
+
+        if (principal == null)
+        {
+            logger.LogError("Parse: principal is null");
+        }
+        else
+        {
+            logger.LogError("Claims:");
+            logger.LogError($"principal.IdentityProvider = {principal.IdentityProvider}");
+            logger.LogError($"principal.NameClaimType = {principal.NameClaimType}");
+            logger.LogError($"principal.RoleClaimType = {principal.RoleClaimType}");
+
+            foreach (var c in principal.Claims)
+            {
+                logger.LogError($"{c.Type} = {c.Value}");
+                //try {  }
+                //catch (Exception e)
+                //{
+                //    logger.LogError("error showing claim");
+                //}
+            }
+        }
 
         var identity = new ClaimsIdentity(principal.IdentityProvider, principal.NameClaimType, principal.RoleClaimType);
         identity.AddClaims(principal.Claims.Select(c => new Claim(c.Type, c.Value)));
