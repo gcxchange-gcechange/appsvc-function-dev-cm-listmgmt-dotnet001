@@ -71,7 +71,7 @@ public static class ClaimsPrincipalParser
             logger.LogError($"Error getting Upn claim: {ex.Message}");
         }
 
-        logger.LogError($"GetUserEmail: email = {email}");
+        //logger.LogError($"GetUserEmail: email = {email}");
 
         return email;
     }
@@ -93,11 +93,11 @@ public static class ClaimsPrincipalParser
         }
 
 
-        logger.LogError("Headers:");
-        foreach (var h in req.Headers)
-        {
-            logger.LogError($"{h.Key} = {h.Value}");
-        }
+        //logger.LogError("Headers:");
+        //foreach (var h in req.Headers)
+        //{
+        //    logger.LogError($"{h.Key} = {h.Value}");
+        //}
 
 
         /** 
