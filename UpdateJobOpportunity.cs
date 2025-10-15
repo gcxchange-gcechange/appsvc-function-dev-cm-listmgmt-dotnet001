@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.Azure.Functions.Worker.Http;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Newtonsoft.Json;
@@ -17,7 +17,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         }
 
         [Function("UpdateJobOpportunity")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
         {
             _logger.LogInformation("UpdateJobOpportunity received a request.");
 
@@ -49,10 +49,15 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             }
             catch (HttpResponseException e)
             {
-                var response = req.CreateResponse(e.StatusCode);
-                response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(e.Details));
-                return (IActionResult)response;
+                var json = JsonConvert.SerializeObject(e.Details);
+                var res = new ContentResult
+                {
+                    StatusCode = (int)e.StatusCode,
+                    Content = json,
+                    ContentType = "application/json"
+                };
+
+                return res;
             }
             catch (Exception e)
             {

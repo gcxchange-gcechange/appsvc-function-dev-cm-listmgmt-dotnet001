@@ -3,7 +3,6 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 
 public static class ClaimsPrincipalParser
@@ -28,13 +27,13 @@ public static class ClaimsPrincipalParser
         public IEnumerable<ClientPrincipalClaim> Claims { get; set; }
     }
 
-    public static bool CanUpdate(HttpRequestData req, string ContactEmail, ILogger logger)
+    public static bool CanUpdate(HttpRequest req, string ContactEmail, ILogger logger)
     {
         string UserEmail = GetUserEmail(req, logger);
         return UserEmail.ToLower() == ContactEmail.ToLower();
     }
 
-    public static string GetUserEmail(HttpRequestData req, ILogger logger)
+    public static string GetUserEmail(HttpRequest req, ILogger logger)
     {
         logger.LogError($"HttpRequest req = {req}");
 
@@ -77,42 +76,43 @@ public static class ClaimsPrincipalParser
         return email;
     }
 
-    public static ClaimsPrincipal Parse(HttpRequestData req, ILogger logger)
+    public static ClaimsPrincipal Parse(HttpRequest req, ILogger logger)
     {
-        ClientPrincipal principal = null;
+        var principal = new ClientPrincipal();
 
-        if (req.Headers.TryGetValues("x-ms-client-principal", out var headerValues))
+        if (req.Headers.TryGetValue("x-ms-client-principal", out var header))
         {
-            var data = headerValues.FirstOrDefault();
-            if (!string.IsNullOrEmpty(data))
-            {
-                try
-                {
-                    var decoded = Convert.FromBase64String(data);
-                    var json = Encoding.UTF8.GetString(decoded);
-                    principal = JsonSerializer.Deserialize<ClientPrincipal>(
-                        json,
-                        new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
-                }
-                catch (Exception ex)
-                {
-                    logger.LogError($"Error parsing client principal: {ex.Message}");
-                }
-            }
-            else
-            {
-                logger.LogError("Header x-ms-client-principal is empty");
-            }
+            var data = header[0];
+            var decoded = Convert.FromBase64String(data);
+            var json = Encoding.UTF8.GetString(decoded);
+            principal = JsonSerializer.Deserialize<ClientPrincipal>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
         }
         else
         {
             logger.LogError("Could not find header x-ms-client-principal");
         }
 
+
+        //logger.LogError("Headers:");
+        //foreach (var h in req.Headers)
+        //{
+        //    logger.LogError($"{h.Key} = {h.Value}");
+        //}
+
+
+        /** 
+         *  At this point, the code can iterate through `principal.Claims` to
+         *  check claims as part of validation. Alternatively, you can convert
+         *  it into a standard object with which to perform those checks later
+         *  in the request pipeline. That object can also be leveraged for 
+         *  associating user data, and so on. The rest of this function performs such
+         *  a conversion to create a `ClaimsPrincipal` as might be used in 
+         *  other .NET code.
+         */
+
         if (principal == null)
         {
             logger.LogError("Parse: principal is null");
-            principal = new ClientPrincipal(); // fallback to empty principal
         }
         else
         {
@@ -124,15 +124,15 @@ public static class ClaimsPrincipalParser
             foreach (var c in principal.Claims)
             {
                 logger.LogError($"{c.Type} = {c.Value}");
+                //try {  }
+                //catch (Exception e)
+                //{
+                //    logger.LogError("error showing claim");
+                //}
             }
         }
 
-        // Convert to standard ClaimsPrincipal
-        var identity = new ClaimsIdentity(
-            principal.IdentityProvider,
-            principal.NameClaimType,
-            principal.RoleClaimType);
-
+        var identity = new ClaimsIdentity(principal.IdentityProvider, principal.NameClaimType, principal.RoleClaimType);
         identity.AddClaims(principal.Claims.Select(c => new Claim(c.Type, c.Value)));
 
         return new ClaimsPrincipal(identity);
