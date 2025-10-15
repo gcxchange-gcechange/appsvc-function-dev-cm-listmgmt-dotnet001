@@ -1,6 +1,6 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Newtonsoft.Json;
@@ -17,7 +17,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         }
 
         [Function("UpdateJobOpportunity")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
         {
             _logger.LogInformation("UpdateJobOpportunity received a request.");
 
@@ -46,6 +46,13 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                     _logger.LogWarning($"Unauthorized update attempted by logged in user {ClaimsPrincipalParser.GetUserEmail(req, _logger)} on JobOpportunityId {itemId}.");
                     result = new BadRequestResult();
                 }
+            }
+            catch (HttpResponseException e)
+            {
+                var response = req.CreateResponse(e.StatusCode);
+                response.Headers.Add("Content-Type", "application/json");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(e.Details));
+                return (IActionResult)response;
             }
             catch (Exception e)
             {
