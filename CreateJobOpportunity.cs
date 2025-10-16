@@ -1,9 +1,8 @@
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
-using Microsoft.Graph.Models;
 using Newtonsoft.Json;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
@@ -18,7 +17,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         }
 
         [Function("CreateJobOpportunity")]
-        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequest req)
+        public async Task<IActionResult> Run([HttpTrigger(AuthorizationLevel.Anonymous, "get", "post")] HttpRequestData req)
         {
             _logger.LogInformation("CreateJobOpportunity received a request.");
 
@@ -36,10 +35,17 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var listItem = Common.BuildListItem(requestBody, _logger);
 
                 GraphServiceClient client = Common.GetClient(_logger);
-                string json = Newtonsoft.Json.JsonConvert.SerializeObject(listItem.Fields.AdditionalData);
+                string json = JsonConvert.SerializeObject(listItem.Fields.AdditionalData);
 
                 var newListItem = await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
                 listItemId = newListItem.Id;
+            }
+            catch (HttpResponseException e)
+            {
+                var response = req.CreateResponse(e.StatusCode);
+                response.Headers.Add("Content-Type", "application/json");
+                await response.WriteStringAsync(JsonConvert.SerializeObject(e.Details));
+                return (IActionResult)response;
             }
             catch (Exception e)
             {
