@@ -7,6 +7,7 @@ using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
+using FuzzySharp;
 using static appsvc_function_dev_cm_listmgmt_dotnet001.Auth;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
@@ -255,7 +256,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 opportunity.JobDescriptionFr
             };
 
-            var keyPhrases = new string[]
+            var keyPhrases = new List<string>
             {
                 "seeking a position",
                 "I’m seeking a role in",
@@ -270,11 +271,14 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 "I'm ready to",
                 "I can be reached at",
                 "À la recherche d’un emploi",
-                "Je recherche un emploi en (dans)",
+                "Je recherche un emploi en",
+                "Je recherche un emploi dans",
                 "Je recherche",
                 "Je suis parfaitement qualifié",
                 "Je connais bien",
-                "Je me trouve à (en, au)",
+                "Je me trouve à",
+                "Je me trouve en",
+                "Je me trouve au",
                 "J’apporte à l’emploi",
                 "Je suis ouvert à",
                 "J’ai travaillé par le passé chez",
@@ -282,6 +286,21 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 "Je suis prêt à",
                 "Vous pouvez me joindre à"
             };
+
+            for (int i = 0; i < keyPhrases.Count; i++)
+            {
+                if (keyPhrases[i].Contains("I'm", StringComparison.OrdinalIgnoreCase))
+                    keyPhrases.Add(keyPhrases[i].Replace("I'm", "I am", StringComparison.OrdinalIgnoreCase));
+
+                if (keyPhrases[i].Contains("I'll", StringComparison.OrdinalIgnoreCase))
+                    keyPhrases.Add(keyPhrases[i].Replace("I'll", "I will", StringComparison.OrdinalIgnoreCase));
+
+                if (keyPhrases[i].Contains("I've", StringComparison.OrdinalIgnoreCase))
+                    keyPhrases.Add(keyPhrases[i].Replace("I've", "I have", StringComparison.OrdinalIgnoreCase));
+
+                if (keyPhrases[i].Contains("I'd", StringComparison.OrdinalIgnoreCase))
+                    keyPhrases.Add(keyPhrases[i].Replace("I'd", "I would", StringComparison.OrdinalIgnoreCase));
+            }
 
             foreach (var input in inputs)
             {
@@ -293,11 +312,10 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 {
                     string normPhrase = NormalizeText(phrase);
 
-                    int index = 0;
-                    while ((index = normInput.IndexOf(normPhrase, index, StringComparison.OrdinalIgnoreCase)) >= 0)
+                    var matchScore = Fuzz.PartialRatio(normPhrase, normInput);
+                    if (matchScore >= 85)
                     {
                         violationCount++;
-                        index += normPhrase.Length;
                     }
                 }
             }
