@@ -31,6 +31,10 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 string itemId = data?.ItemId;
                 var listItem = Common.BuildListItem(requestBody, _logger);
                 string ContactEmail = listItem.Fields.AdditionalData["ContactEmail"].ToString();
+                //string ContactObjectId = listItem.Fields.AdditionalData["ContactObjectId"].ToString();
+
+                //_logger.LogError($"ContactEmail = {ContactEmail}");
+                //_logger.LogError($"ContactObjectId = {ContactObjectId}");
 
                 if (ClaimsPrincipalParser.CanUpdate(req, ContactEmail, _logger))
                 {

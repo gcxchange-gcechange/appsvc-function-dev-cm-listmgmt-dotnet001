@@ -21,8 +21,11 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         {
             try
             {
-
                 var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
+
+                // Loads dynamic property aliases for JobOpportunity
+                PropertyAliasMapper.LoadAliases(config);
+
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
 
                 ValidateJobOpportunity(opportunity);
@@ -37,32 +40,32 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                     {
                         AdditionalData = new Dictionary<string, object>()
                         {
-                            {"ContactObjectId", opportunity.ContactObjectId},
-                            {"ContactName", opportunity.ContactName},
-                            {"DepartmentLookupId", opportunity.DepartmentId},
-                            {"ContactEmail", opportunity.ContactEmail},
-                            {"JobTitleEn", opportunity.JobTitleEn},
-                            {"JobTitleFr", opportunity.JobTitleFr},
-                            {config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
-                            {config["programAreaHiddenColName"], opportunity.ProgramArea.ToString()},
-                            {"ClassificationCodeLookupId", opportunity.ClassificationCodeId},
-                            {"ClassificationLevelLookupId", opportunity.ClassificationLevelId},
-                            {"NumberOfOpportunities", opportunity.NumberOfOpportunities},
-                            {"DurationLookupId", opportunity.DurationId},
-                            {"ApplicationDeadlineDate", opportunity.ApplicationDeadlineDate.Value.ToUniversalTime()},
-                            {"JobDescriptionEn", opportunity.JobDescriptionEn},
-                            {"JobDescriptionFr", opportunity.JobDescriptionFr},
-                            {"WorkScheduleLookupId", opportunity.WorkScheduleId},
-                            {"SecurityClearanceLookupId", opportunity.SecurityClearanceId},
-                            {"LanguageComprehension", opportunity.LanguageComprehension},
-                            {"LanguageRequirementLookupId", opportunity.LanguageRequirementId},
-                            {"WorkArrangementLookupId", opportunity.WorkArrangementId},
-                            {"ApprovedStaffing", opportunity.ApprovedStaffing},
-                            {"SkillsLookupId@odata.type", "Collection(Edm.String)"},
-                            {"SkillsLookupId", opportunity.SkillIds},
-                            {"CityLookupId", opportunity.CityId},
-                            {"DurationQuantity", opportunity.DurationQuantity},
-                            {"DurationInDays", CalculateDurationInDays(opportunity, config)}
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ContactObjectId)), opportunity.ContactObjectId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ContactName)), opportunity.ContactName },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.DepartmentId)), opportunity.DepartmentId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ContactEmail)), opportunity.ContactEmail },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleEn)), opportunity.JobTitleEn },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleFr)), opportunity.JobTitleFr },
+                            { config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
+                            { config["programAreaHiddenColName"], opportunity.ProgramArea.ToString()},
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ClassificationCodeId)), opportunity.ClassificationCodeId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ClassificationLevelId)), opportunity.ClassificationLevelId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.NumberOfOpportunities)), opportunity.NumberOfOpportunities },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.DurationId)), opportunity.DurationId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ApplicationDeadlineDate)), opportunity.ApplicationDeadlineDate?.ToUniversalTime() },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionEn)), opportunity.JobDescriptionEn },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionFr)), opportunity.JobDescriptionFr },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.WorkScheduleId)), opportunity.WorkScheduleId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.SecurityClearanceId)), opportunity.SecurityClearanceId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.LanguageComprehension)), opportunity.LanguageComprehension },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.LanguageRequirementId)), opportunity.LanguageRequirementId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.WorkArrangementId)), opportunity.WorkArrangementId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ApprovedStaffing)), opportunity.ApprovedStaffing },
+                            { $"{PropertyAliasMapper.GetAlias(nameof(opportunity.SkillIds))}@odata.type", "Collection(Edm.String)"},
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.SkillIds)), opportunity.SkillIds },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.CityId)), opportunity.CityId },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.DurationQuantity)), opportunity.DurationQuantity },
+                            { config["durationInDays_Alias"], CalculateDurationInDays(opportunity, config)}
                         }
                     }
                 };
@@ -108,52 +111,52 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         {
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
 
-            ValidateTextField(opportunity.ContactObjectId, "ContactObjectId");
-            ValidateTextField(opportunity.ContactName, "ContactName");
-            ValidateLookupId(opportunity.DepartmentId, "DepartmentId");
-            ValidateTextField(opportunity.ContactEmail, "ContactEmail");
-            ValidateTextField(opportunity.JobTitleEn, "JobTitleEn");
-            ValidateTextField(opportunity.JobTitleFr, "JobTitleFr");
-            ValidateTerms(opportunity.JobType, "JobType");
-            ValidateTerm(opportunity.ProgramArea, "ProgramArea");
-            ValidateLookupId(opportunity.ClassificationCodeId, "ClassificationCodeId");
-            ValidateLookupId(opportunity.ClassificationLevelId, "ClassificationLevelId");
-            ValidateNumber(opportunity.NumberOfOpportunities, "NumberOfOpportunities");
-            ValidateDateTime(opportunity.ApplicationDeadlineDate, "ApplicationDeadlineDate");
-            ValidateMultiTextField(opportunity.JobDescriptionEn, "JobDescriptionEn");
-            ValidateMultiTextField(opportunity.JobDescriptionFr, "JobDescriptionFr");
-            ValidateLookupId(opportunity.WorkScheduleId, "WorkScheduleId");
-            ValidateLookupId(opportunity.SecurityClearanceId, "SecurityClearanceId");
-            ValidateLookupId(opportunity.LanguageRequirementId, "LanguageRequirementId");
-            ValidateLookupId(opportunity.WorkArrangementId, "WorkArrangementId");
-            ValidateLookupId(opportunity.CityId, "CityId");
+            ValidateTextField(opportunity.ContactObjectId, PropertyAliasMapper.GetAlias(nameof(opportunity.ContactObjectId)));
+            ValidateTextField(opportunity.ContactName, PropertyAliasMapper.GetAlias(nameof(opportunity.ContactName)));
+            ValidateLookupId(opportunity.DepartmentId, PropertyAliasMapper.GetAlias(nameof(opportunity.DepartmentId)));
+            ValidateTextField(opportunity.ContactEmail, PropertyAliasMapper.GetAlias(nameof(opportunity.ContactEmail)));
+            ValidateTextField(opportunity.JobTitleEn, PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleEn)));
+            ValidateTextField(opportunity.JobTitleFr, PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleFr)));
+            ValidateTerms(opportunity.JobType, PropertyAliasMapper.GetAlias(nameof(opportunity.JobType)));
+            ValidateTerm(opportunity.ProgramArea, PropertyAliasMapper.GetAlias(nameof(opportunity.ProgramArea)));
+            ValidateLookupId(opportunity.ClassificationCodeId, PropertyAliasMapper.GetAlias(nameof(opportunity.ClassificationCodeId)));
+            ValidateLookupId(opportunity.ClassificationLevelId, PropertyAliasMapper.GetAlias(nameof(opportunity.ClassificationLevelId)));
+            ValidateNumber(opportunity.NumberOfOpportunities, PropertyAliasMapper.GetAlias(nameof(opportunity.NumberOfOpportunities)));
+            ValidateDateTime(opportunity.ApplicationDeadlineDate, PropertyAliasMapper.GetAlias(nameof(opportunity.ApplicationDeadlineDate)));
+            ValidateMultiTextField(opportunity.JobDescriptionEn, PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionEn)));
+            ValidateMultiTextField(opportunity.JobDescriptionFr, PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionFr)));
+            ValidateLookupId(opportunity.WorkScheduleId, PropertyAliasMapper.GetAlias(nameof(opportunity.WorkScheduleId)));
+            ValidateLookupId(opportunity.SecurityClearanceId, PropertyAliasMapper.GetAlias(nameof(opportunity.SecurityClearanceId)));
+            ValidateLookupId(opportunity.LanguageRequirementId, PropertyAliasMapper.GetAlias(nameof(opportunity.LanguageRequirementId)));
+            ValidateLookupId(opportunity.WorkArrangementId, PropertyAliasMapper.GetAlias(nameof(opportunity.WorkArrangementId)));
+            ValidateLookupId(opportunity.CityId, PropertyAliasMapper.GetAlias(nameof(opportunity.CityId)));
 
             // If the opportunity is a Deployment it doesn't need a DurationId or DurationQuantity
             if (!opportunity.JobType.Any(j => j.Guid == config["deploymentJobTypeId"]))
             {
-                ValidateLookupId(opportunity.DurationId, "DurationId");
-                ValidateNumber(opportunity.DurationQuantity, "DurationQuantity");
+                ValidateLookupId(opportunity.DurationId, PropertyAliasMapper.GetAlias(nameof(opportunity.DurationId)));
+                ValidateNumber(opportunity.DurationQuantity, PropertyAliasMapper.GetAlias(nameof(opportunity.DurationQuantity)));
             }
 
             if (opportunity.SkillIds == null || opportunity.SkillIds.Length == 0)
-                throw new ArgumentException("Field cannot be null or empty.", "SkillIds");
+                throw new ArgumentException("Field cannot be null or empty.", PropertyAliasMapper.GetAlias(nameof(opportunity.SkillIds)));
 
             for (var i = 0; i < opportunity.SkillIds.Length; i++)
             {
-                ValidateLookupId(opportunity.SkillIds[i], $"SkillIds[{i}]");
+                ValidateLookupId(opportunity.SkillIds[i], $"{PropertyAliasMapper.GetAlias(nameof(opportunity.SkillIds))}[{i}]");
             }
 
             if (opportunity.ApprovedStaffing == null)
-                throw new ArgumentException("Field cannot be null.", "ApprovedStaffing");
+                throw new ArgumentException("Field cannot be null.", PropertyAliasMapper.GetAlias(nameof(opportunity.ApprovedStaffing)));
 
             // If a job is not Bilingual it doesn't need LanguageComprehension
             if (opportunity.LanguageRequirementId == config["bilingualLanguageRequirementId"])
             {
-                ValidateTextField(opportunity.LanguageComprehension, "LanguageComprehension");
+                ValidateTextField(opportunity.LanguageComprehension, PropertyAliasMapper.GetAlias(nameof(opportunity.LanguageComprehension)));
 
                 Regex langCompRegex = new Regex(@"^[A-C,E]{3}-[A-C,E]{3}$");
                 if (!langCompRegex.IsMatch(opportunity.LanguageComprehension))
-                    throw new ArgumentException("Field is formatted incorrectly.", "LanguageComprehension");
+                    throw new ArgumentException("Field is formatted incorrectly.", PropertyAliasMapper.GetAlias(nameof(opportunity.LanguageComprehension)));
             }
         }
 
@@ -231,38 +234,38 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         }
     }
 
-    internal class JobOpportunity
+    public class JobOpportunity
     {
-        public string ContactObjectId;
-        public string ContactName;
-        public string DepartmentId;
-        public string ContactEmail;
-        public string JobTitleEn;
-        public string JobTitleFr;
-        public Term[] JobType;
-        public Term ProgramArea;
-        public string ClassificationCodeId;
-        public string ClassificationLevelId;
-        public int NumberOfOpportunities;
-        public string DurationId;
-        public DateTime? ApplicationDeadlineDate;
-        public string JobDescriptionEn;
-        public string JobDescriptionFr;
-        public string WorkScheduleId;
-        public string CityId;
-        public string SecurityClearanceId;
-        public string LanguageComprehension;
-        public string LanguageRequirementId;
-        public string WorkArrangementId;
-        public bool? ApprovedStaffing;
-        public string[] SkillIds;
-        public int DurationQuantity;
+        public string ContactObjectId { get; set; }
+        public string ContactName { get; set; }
+        public string DepartmentId { get; set; }
+        public string ContactEmail { get; set; }
+        public string JobTitleEn { get; set; }
+        public string JobTitleFr { get; set; }
+        public Term[] JobType { get; set; }
+        public Term ProgramArea { get; set; }
+        public string ClassificationCodeId { get; set; }
+        public string ClassificationLevelId { get; set; }
+        public int NumberOfOpportunities { get; set; }
+        public string DurationId { get; set; }
+        public DateTime? ApplicationDeadlineDate { get; set; }
+        public string JobDescriptionEn { get; set; }
+        public string JobDescriptionFr { get; set; }
+        public string WorkScheduleId { get; set; }
+        public string CityId { get; set; }
+        public string SecurityClearanceId { get; set; }
+        public string LanguageComprehension { get; set; }
+        public string LanguageRequirementId { get; set; }
+        public string WorkArrangementId { get; set; }
+        public bool? ApprovedStaffing { get; set; }
+        public string[] SkillIds { get; set; }
+        public int DurationQuantity { get; set; }
     }
 
-    internal class Term
+    public class Term
     {
-        public string Label;
-        public string Guid;
+        public string Label { get; set; }
+        public string Guid { get; set; }
 
         public override string ToString()
         {

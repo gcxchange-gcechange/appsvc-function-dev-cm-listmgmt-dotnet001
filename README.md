@@ -35,7 +35,7 @@ n/a
 
 ## App setting
 
-| Name                     | Description                                                                       |
+| Name                     | Description                                                                       | 
 | ------------------------ | --------------------------------------------------------------------------------- |
 | AzureWebJobsStorage      | Connection string for the storage acoount                                         |
 | clientId                 | The application (client) ID of the app registration                               |
@@ -53,6 +53,31 @@ n/a
 | durationWeekId           | The Id of the week(s) item in the Duration list. Used to calculate DurationInDays   |
 | bilingualLanguageRequirementId | The Id of the Bilingual item in the LanguageRequirement list. Used for validation |
 | deploymentJobTypeId	   | The Id of the Deployment term. Used for validation.							   |
+| applicationDeadlineDate_Alias	   | The name of the ApplicationDeadlineDate column							   |
+| approvedStaffing_Alias	   | The name of the ApprovedStaffing column							   |
+| cityId_Alias	   | The name of the City column in the format `{ColumnName}LookupId`						   |
+| classificationCodeId_Alias	   | The name of the ClassificationCode column in the format `{ColumnName}LookupId`	|
+| classificationLevelId_Alias	   | The name of the ClassificationLevel column in the format `{ColumnName}LookupId`|
+| contactEmail_Alias	   | The name of the ContactEmail column					   |
+| contactName_Alias	   | The name of the ContactName column					   |
+| contactObjectId_Alias	   | The name of the ContactObjectId column					   |
+| departmentId_Alias	   | The name of the Department column in the format `{ColumnName}LookupId`	|
+| durationId_Alias	   | The name of the Duration column in the format `{ColumnName}LookupId`	|
+| durationInDays_Alias	   | The name of the DurationInDays column					   |
+| durationQuantity_Alias	   | The name of the DurationQuantity column					   |
+| jobDescriptionEn_Alias	   | The name of the JobDescriptionEn column					   |
+| jobDescriptionFr_Alias	   | The name of the JobDescriptionFr column					   |
+| jobTitleEn_Alias	   | The name of the JobTitleEn column					   |
+| jobTitleFr_Alias	   | The name of the JobTitleFr column					   |
+| jobType_Alias	   | The name of the JobType column					   |
+| languageComprehension_Alias	   | The name of the LanguageComprehension column					   |
+| languageRequirementId_Alias	   | The name of the LanguageRequirement column in the format `{ColumnName}LookupId` |
+| numberOfOpportunities_Alias	   | The name of the NumberOfOpportunities column					   |
+| programArea_Alias	   | The name of the ProgramArea column					   |
+| securityClearanceId_Alias	   | The name of the SecurityClearance column in the format `{ColumnName}LookupId` |
+| skillIds_Alias	   | The name of the Skills column in the format `{ColumnName}LookupId` |
+| workArrangementId_Alias	   | The name of the WorkArrangement column in the format `{ColumnName}LookupId` |
+| workScheduleId_Alias	   | The name of the WorkSchedule column in the format `{ColumnName}LookupId` |
 
 ## Version history
 
