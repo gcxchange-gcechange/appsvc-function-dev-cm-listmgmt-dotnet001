@@ -75,6 +75,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             catch (Exception e)
             {
                 logger.LogError("Error adding a list item!!");
+                logger.LogError($"GetUserEmail: email = {email}");
                 logger.LogError(e.Message);
                 if (e.InnerException is not null) logger.LogError(e.InnerException.Message);
                 logger.LogError(e.StackTrace);
