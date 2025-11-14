@@ -1,0 +1,33 @@
+name: Unit-Tests
+
+trigger: none
+
+pr:
+  branches:
+    include:
+      - main
+      - master
+
+pool:
+  vmImage: 'windows-latest'
+
+steps:
+  - task: UseDotNet@2
+    inputs:
+      packageType: 'sdk'
+      version: '8.0.x'
+
+  - script: dotnet restore
+    displayName: "Restore"
+
+  - script: dotnet build --configuration Release
+    displayName: "Build"
+
+  - script: dotnet test --configuration Release --logger trx
+    displayName: "Test"
+
+  - task: PublishTestResults@2
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/*.trx'
+      failTaskOnFailedTests: true
