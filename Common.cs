@@ -118,7 +118,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             throw new ArgumentException("Failed to map to one of the following: [durationYearId, durationMonthId, durationWeekId]", "DurationId");
         }
 
-        private static void ValidateJobOpportunity(JobOpportunity opportunity)
+        public static void ValidateJobOpportunity(JobOpportunity opportunity)
         {
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
 
