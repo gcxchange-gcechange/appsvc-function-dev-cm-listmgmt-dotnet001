@@ -122,6 +122,9 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         {
             var config = new ConfigurationBuilder().AddJsonFile("appsettings.json", optional: true, reloadOnChange: true).AddEnvironmentVariables().Build();
 
+            // Loads dynamic property aliases for JobOpportunity
+            PropertyAliasMapper.LoadAliases(config);
+
             ValidateTextField(opportunity.ContactObjectId, PropertyAliasMapper.GetAlias(nameof(opportunity.ContactObjectId)));
             ValidateTextField(opportunity.ContactName, PropertyAliasMapper.GetAlias(nameof(opportunity.ContactName)));
             ValidateLookupId(opportunity.DepartmentId, PropertyAliasMapper.GetAlias(nameof(opportunity.DepartmentId)));
