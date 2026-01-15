@@ -40,7 +40,13 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 _logger.LogInformation($"listItem.Fields.AdditionalData = {json}");
 
                 var newListItem = await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
+
                 listItemId = newListItem.Id;
+
+                var newListItemPartTwo = await client.Sites[config.SiteId].Lists[config.ListId].Items[listItemId].Fields.PatchAsync(listItem.Fields);
+
+                _logger.LogInformation($"newListItemPartTwo.Id = {newListItemPartTwo.Id}");
+
             }
             catch (HttpResponseException e)
             {
