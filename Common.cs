@@ -59,7 +59,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.ClassificationLevelId)), opportunity.ClassificationLevelId },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.NumberOfOpportunities)), opportunity.NumberOfOpportunities },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.DurationId)), opportunity.DurationId },
-                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ApplicationDeadlineDate)), opportunity.ApplicationDeadlineDate?.ToUniversalTime() },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ApplicationDeadlineDate)), opportunity.ApplicationDeadlineDate },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionEn)), opportunity.JobDescriptionEn },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionFr)), opportunity.JobDescriptionFr },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.WorkScheduleId)), opportunity.WorkScheduleId },
