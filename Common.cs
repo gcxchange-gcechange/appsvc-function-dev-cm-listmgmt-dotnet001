@@ -1,13 +1,14 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using FuzzySharp;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Newtonsoft.Json;
+using System;
 using System.Globalization;
 using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using FuzzySharp;
 using static appsvc_function_dev_cm_listmgmt_dotnet001.Auth;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
@@ -33,9 +34,12 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 ValidateJobOpportunity(opportunity);
 
-                var violations = CountSeekerViolations(opportunity);
+                var violations = CountSeekerViolations(opportunity, logger);
                 if (violations >= 2)
+                {
+                    logger.LogError($"Post blocked due to job seeking.");
                     throw new HttpResponseException(HttpStatusCode.UnprocessableEntity, "Job seeking is prohibited.", new { Violations = violations });
+                }
 
                 // data cleanup: if DurationId is empty then give it a value of 0
                 if (opportunity.DurationId == string.Empty)
@@ -250,7 +254,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 throw new ArgumentException("Field must be a positive number", fieldName);
         }
 
-        private static int CountSeekerViolations(JobOpportunity opportunity)
+        private static int CountSeekerViolations(JobOpportunity opportunity, ILogger logger)
         {
             var violationCount = 0;
 
@@ -312,37 +316,61 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             {
                 if (string.IsNullOrEmpty(input)) continue;
 
-                string normInput = NormalizeText(input);
+                string normInput = NormalizeText(input).ToLowerInvariant();
 
                 foreach (var phrase in keyPhrases)
                 {
-                    string normPhrase = NormalizeText(phrase);
+                    string normPhrase = NormalizeText(phrase).ToLowerInvariant();
+
+                    if (PhraseIsFirstPerson(normPhrase))
+                    {
+                        bool hasFirstPerson =
+                            ContainsFirstPersonEnglish(normInput) ||
+                            ContainsFirstPersonFrench(normInput);
+
+                        if (!hasFirstPerson)
+                            continue;
+                    }
 
                     var matchScore = Fuzz.PartialRatio(normPhrase, normInput);
                     if (matchScore >= 85)
                     {
                         violationCount++;
+                        logger.LogWarning($"Violation: \"{normInput}\"\nFuzzy Match: \"{normPhrase}\"");
                     }
                 }
             }
+
+            if (violationCount > 0)
+                logger.LogWarning($"Total seeker violations: {violationCount}");
 
             return violationCount;
         }
 
         private static string NormalizeText(string s)
         {
+            if (string.IsNullOrWhiteSpace(s))
+                return string.Empty;
+
+            s = WebUtility.HtmlDecode(s);
+
+            s = Regex.Replace(s, "<.*?>", " ");
+
             s = s.Normalize(NormalizationForm.FormD);
-            s = s.Replace('\u00A0', ' ');
-            s = s.Replace('\u2019', '\''); 
-            s = s.Replace('\u2018', '\'');
-            s = s.Replace('\u201C', '"');
-            s = s.Replace('\u201D', '"');
-            s = s.Replace('\u2013', '-');
-            s = s.Replace('\u2014', '-');
+
+            s = s.Replace('\u00A0', ' ')
+                 .Replace('\u2019', '\'')
+                 .Replace('\u2018', '\'')
+                 .Replace('\u201C', '"')
+                 .Replace('\u201D', '"')
+                 .Replace('\u2013', '-')
+                 .Replace('\u2014', '-');
 
             s = RemoveAccents(s);
 
-            return s.Normalize(NormalizationForm.FormC);
+            s = Regex.Replace(s, @"\s+", " ");
+
+            return s.Normalize(NormalizationForm.FormC).Trim();
         }
 
         private static string RemoveAccents(string text)
@@ -359,6 +387,25 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             return sb.ToString().Normalize(NormalizationForm.FormC);
         }
+        private static bool ContainsFirstPersonEnglish(string text)
+        {
+            return Regex.IsMatch(text, @"\b(i am|i'm|i have|i've|i would|i'd|i will|i'll)\b");
+        }
+
+        private static bool ContainsFirstPersonFrench(string text)
+        {
+            return Regex.IsMatch(text, @"\b(je suis|j'suis|j ai|j'ai|je me|j ai travaille|j'ai travaille)\b");
+        }
+
+        private static bool PhraseIsFirstPerson(string phrase)
+        {
+            return Regex.IsMatch(
+                phrase,
+                @"^(i am|i'm|i have|i've|i would|i'd|i will|i'll|je suis|j'suis)",
+                RegexOptions.IgnoreCase
+            );
+        }
+
     }
 
     public class JobOpportunity
