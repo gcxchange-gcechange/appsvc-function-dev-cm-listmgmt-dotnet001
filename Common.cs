@@ -59,7 +59,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.ClassificationLevelId)), opportunity.ClassificationLevelId },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.NumberOfOpportunities)), opportunity.NumberOfOpportunities },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.DurationId)), opportunity.DurationId },
-                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ApplicationDeadlineDate)), opportunity.ApplicationDeadlineDate?.ToUniversalTime() },
+                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ApplicationDeadlineDate)), opportunity.ApplicationDeadlineDate },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionEn)), opportunity.JobDescriptionEn },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.JobDescriptionFr)), opportunity.JobDescriptionFr },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.WorkScheduleId)), opportunity.WorkScheduleId },
@@ -237,7 +237,10 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             if (value == null)
                 throw new ArgumentException("Field cannot be null.", fieldName);
 
-            if (value.Value.ToUniversalTime() < DateTime.UtcNow.AddDays(7))
+            if (value.Value.Kind != DateTimeKind.Utc)
+                throw new ArgumentException($"DateTimeKind expected Utc but was {value.Value.Kind}", fieldName);
+
+            if (value.Value < DateTime.UtcNow.AddDays(7))
                 throw new ArgumentException("Field must be at least 7 days into the future.", fieldName);
         }
 

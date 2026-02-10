@@ -51,7 +51,7 @@ namespace xUnitTests
             job.ClassificationLevelId = "1";
             job.NumberOfOpportunities = 1;
             job.DurationId = "1";
-            job.ApplicationDeadlineDate = DateTime.Now.AddDays(30);
+            job.ApplicationDeadlineDate = DateTime.Now.AddDays(30).ToUniversalTime();
             job.JobDescriptionEn = "This is the job description EN";
             job.JobDescriptionFr = "This is the job description FR";
             job.WorkScheduleId = "1";
