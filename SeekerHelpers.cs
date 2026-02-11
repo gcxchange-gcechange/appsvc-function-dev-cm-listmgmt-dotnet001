@@ -40,9 +40,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                             if (PhraseIsFirstPerson(normPhrase))
                             {
-                                var hasFirstPerson =
-                                    ContainsFirstPersonEnglish(sentence) ||
-                                    ContainsFirstPersonFrench(sentence);
+                                var hasFirstPerson = ContainsFirstPersonEnglish(sentence) || ContainsFirstPersonFrench(sentence);
 
                                 if (!hasFirstPerson)
                                     continue;
@@ -150,7 +148,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             input = Regex.Replace(input, @"\b\d+\.\d+\b", m => m.Value.Replace(".", "**DOT**"));
 
             // Split on sentence boundaries
-            var sentences = Regex.Split(input, @"(?<=[\.!\?])\s+(?=[A-Z])")
+            var sentences = Regex.Split(input, @"(?<=[.!?])\s+|\r?\n+")
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.Trim())
                 .ToList();
@@ -158,9 +156,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             // Restore the ellipsis & dots
             for (int i = 0; i < sentences.Count; i++)
             {
-                sentences[i] = sentences[i]
-                    .Replace("**ELLIPSIS**", "...")
-                    .Replace("**DOT**", ".");
+                sentences[i] = sentences[i].Replace("**ELLIPSIS**", "...").Replace("**DOT**", ".");
             }
 
             return sentences;
@@ -219,11 +215,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
         private static bool PhraseIsFirstPerson(string phrase)
         {
-            return Regex.IsMatch(
-                phrase,
-                @"^(i am|i'm|i have|i've|i would|i'd|i will|i'll|je suis|j'suis)",
-                RegexOptions.IgnoreCase
-            );
+            return Regex.IsMatch(phrase, @"^(i am|i'm|i have|i've|i would|i'd|i will|i'll|je suis|j'suis)", RegexOptions.IgnoreCase);
         }
     }
 }
