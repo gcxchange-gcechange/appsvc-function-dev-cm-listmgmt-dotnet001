@@ -19,10 +19,10 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             {
                 var inputs = new string[]
                 {
-                opportunity.JobTitleEn,
-                opportunity.JobTitleFr,
-                opportunity.JobDescriptionEn,
-                opportunity.JobDescriptionFr
+                    opportunity.JobTitleEn,
+                    opportunity.JobTitleFr,
+                    opportunity.JobDescriptionEn,
+                    opportunity.JobDescriptionFr
                 };
 
                 foreach (var input in inputs)
