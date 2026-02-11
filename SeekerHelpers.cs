@@ -169,6 +169,9 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             s = WebUtility.HtmlDecode(s);
 
+            // Replace br tags with new line characters to help identify sentences later on
+            s = Regex.Replace(s, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+
             s = Regex.Replace(s, "<.*?>", " ");
 
             s = s.Normalize(NormalizationForm.FormD);
