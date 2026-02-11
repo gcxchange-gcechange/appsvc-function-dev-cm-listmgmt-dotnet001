@@ -9,6 +9,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 {
     public static class SeekerHelpers
     {
+        public const int VIOLATIONS_MAX = 2;
         private static readonly List<string> keyPhrases = BuildKeyPhrases();
 
         public  static int CountSeekerViolations(JobOpportunity opportunity, ILogger logger)
@@ -162,21 +163,21 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             return sentences;
         }
 
-        private static string NormalizeText(string s)
+        private static string NormalizeText(string text)
         {
-            if (string.IsNullOrWhiteSpace(s))
+            if (string.IsNullOrWhiteSpace(text))
                 return string.Empty;
 
-            s = WebUtility.HtmlDecode(s);
+            text = WebUtility.HtmlDecode(text);
 
             // Replace br tags with new line characters to help identify sentences later on
-            s = Regex.Replace(s, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+            text = Regex.Replace(text, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
 
-            s = Regex.Replace(s, "<.*?>", " ");
+            text = Regex.Replace(text, "<.*?>", " ");
 
-            s = s.Normalize(NormalizationForm.FormD);
+            text = text.Normalize(NormalizationForm.FormD);
 
-            s = s.Replace('\u00A0', ' ')
+            text = text.Replace('\u00A0', ' ')
                  .Replace('\u2019', '\'')
                  .Replace('\u2018', '\'')
                  .Replace('\u201C', '"')
@@ -184,11 +185,11 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                  .Replace('\u2013', '-')
                  .Replace('\u2014', '-');
 
-            s = RemoveAccents(s);
+            text = RemoveAccents(text);
 
-            s = Regex.Replace(s, @"\s+", " ");
+            text = Regex.Replace(text, @"\s+", " ");
 
-            return s.Normalize(NormalizationForm.FormC).Trim();
+            return text.Normalize(NormalizationForm.FormC).Trim();
         }
 
         private static string RemoveAccents(string text)

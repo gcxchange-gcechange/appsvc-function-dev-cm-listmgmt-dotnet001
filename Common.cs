@@ -36,7 +36,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 ValidateJobOpportunity(opportunity);
 
                 var violations = CountSeekerViolations(opportunity, logger);
-                if (violations >= 2)
+                if (violations >= SeekerHelpers.VIOLATIONS_MAX)
                 {
                     logger.LogError($"Post blocked due to job seeking.");
                     throw new HttpResponseException(HttpStatusCode.UnprocessableEntity, "Job seeking is prohibited.", new { Violations = violations });
