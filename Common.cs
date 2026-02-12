@@ -293,7 +293,9 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             // Allow only required tags
             sanitizer.AllowedTags.Add("p");
             sanitizer.AllowedTags.Add("strong");
+            sanitizer.AllowedTags.Add("b");
             sanitizer.AllowedTags.Add("em");
+            sanitizer.AllowedTags.Add("i");
             sanitizer.AllowedTags.Add("u");
             sanitizer.AllowedTags.Add("ul");
             sanitizer.AllowedTags.Add("ol");
@@ -312,6 +314,15 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             JobDescriptionEn = sanitizer.Sanitize(JobDescriptionEn);
             JobDescriptionFr = sanitizer.Sanitize(JobDescriptionFr);
+
+            // Replace the quill classes with inline styles 
+            JobDescriptionEn = JobDescriptionEn.Replace("<p class=\"ql-align-center\">", "<p style=\"text-align:center\">")
+                                .Replace("<p class=\"ql-align-right\">", "<p style=\"text-align:right\">")
+                                .Replace("<p class=\"ql-align-left\">", "<p style=\"text-align:left\">");
+
+            JobDescriptionFr = JobDescriptionFr.Replace("<p class=\"ql-align-center\">", "<p style=\"text-align:center\">")
+                                .Replace("<p class=\"ql-align-right\">", "<p style=\"text-align:right\">")
+                                .Replace("<p class=\"ql-align-left\">", "<p style=\"text-align:left\">");
         }
     }
 
