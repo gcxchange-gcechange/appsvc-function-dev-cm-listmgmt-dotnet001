@@ -240,7 +240,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             if (value.Value.Kind != DateTimeKind.Utc)
                 throw new ArgumentException($"DateTimeKind expected Utc but was {value.Value.Kind}", fieldName);
 
-            if (value.Value < DateTime.UtcNow.AddDays(7))
+            if (value.Value.Date < DateTime.UtcNow.Date.AddDays(7))
                 throw new ArgumentException("Field must be at least 7 days into the future.", fieldName);
         }
 
