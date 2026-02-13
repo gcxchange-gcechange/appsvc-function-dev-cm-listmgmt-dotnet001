@@ -1,13 +1,11 @@
-﻿using FuzzySharp;
+﻿using Ganss.Xss;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Microsoft.Graph.Models;
 using Newtonsoft.Json;
-using System;
-using System.Globalization;
 using System.Net;
-using System.Text;
+using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using static appsvc_function_dev_cm_listmgmt_dotnet001.Auth;
 using static appsvc_function_dev_cm_listmgmt_dotnet001.SeekerHelpers;
@@ -282,6 +280,50 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         public bool? ApprovedStaffing { get; set; }
         public string[] SkillIds { get; set; }
         public int DurationQuantity { get; set; }
+
+        [OnDeserialized]
+        internal void OnDeserializedMethod(StreamingContext context)
+        {
+            var sanitizer = new HtmlSanitizer();
+
+            sanitizer.AllowedTags.Clear();
+            sanitizer.AllowedAttributes.Clear();
+            sanitizer.AllowedCssProperties.Clear();
+
+            // Allow only required tags
+            sanitizer.AllowedTags.Add("p");
+            sanitizer.AllowedTags.Add("strong");
+            sanitizer.AllowedTags.Add("b");
+            sanitizer.AllowedTags.Add("em");
+            sanitizer.AllowedTags.Add("i");
+            sanitizer.AllowedTags.Add("u");
+            sanitizer.AllowedTags.Add("ul");
+            sanitizer.AllowedTags.Add("ol");
+            sanitizer.AllowedTags.Add("li");
+            sanitizer.AllowedTags.Add("br");
+
+            // Allow class attribute
+            sanitizer.AllowedAttributes.Add("class");
+
+            // Restrict allowed classes
+            sanitizer.AllowedClasses.Add("ql-align-center");
+            sanitizer.AllowedClasses.Add("ql-align-right");
+            sanitizer.AllowedClasses.Add("ql-align-left");
+
+            sanitizer.AllowDataAttributes = false;
+
+            JobDescriptionEn = sanitizer.Sanitize(JobDescriptionEn);
+            JobDescriptionFr = sanitizer.Sanitize(JobDescriptionFr);
+
+            // Replace the quill classes with inline styles 
+            JobDescriptionEn = JobDescriptionEn.Replace("<p class=\"ql-align-center\">", "<p style=\"text-align:center\">")
+                                .Replace("<p class=\"ql-align-right\">", "<p style=\"text-align:right\">")
+                                .Replace("<p class=\"ql-align-left\">", "<p style=\"text-align:left\">");
+
+            JobDescriptionFr = JobDescriptionFr.Replace("<p class=\"ql-align-center\">", "<p style=\"text-align:center\">")
+                                .Replace("<p class=\"ql-align-right\">", "<p style=\"text-align:right\">")
+                                .Replace("<p class=\"ql-align-left\">", "<p style=\"text-align:left\">");
+        }
     }
 
     public class Term
