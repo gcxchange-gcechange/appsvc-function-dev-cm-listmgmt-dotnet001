@@ -164,6 +164,7 @@ namespace xUnitTests
             _jobOpportunity.ContactName = "Shea Dougherty-Gill";
             _jobOpportunity.DepartmentId = "1";
             _jobOpportunity.ContactEmail = "Shea.Dougherty-Gill@fakeemail.com";
+            _jobOpportunity.ApplyEmail = "Shea.Apply@fakeemail.com";
             _jobOpportunity.JobTitleEn = "Job TItle EN";
             _jobOpportunity.JobTitleFr = "Job TItle FR";
             _jobOpportunity.JobType = [new Term { Label = "Test Job Type", Guid = "7eb00e55-4683-4b49-b83a-1b52090adb02" }];
