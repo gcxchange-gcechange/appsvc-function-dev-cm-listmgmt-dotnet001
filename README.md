@@ -59,6 +59,7 @@ n/a
 | classificationCodeId_Alias	   | The name of the ClassificationCode column in the format `{ColumnName}LookupId`	|
 | classificationLevelId_Alias	   | The name of the ClassificationLevel column in the format `{ColumnName}LookupId`|
 | contactEmail_Alias	   | The name of the ContactEmail column					   |
+| applyEmail_Alias	   | The name of the ApplyEmail column					   |
 | contactName_Alias	   | The name of the ContactName column					   |
 | contactObjectId_Alias	   | The name of the ContactObjectId column					   |
 | departmentId_Alias	   | The name of the Department column in the format `{ColumnName}LookupId`	|
