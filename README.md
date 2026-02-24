@@ -53,6 +53,7 @@ n/a
 | durationWeekId           | The Id of the week(s) item in the Duration list. Used to calculate DurationInDays   |
 | bilingualLanguageRequirementId | The Id of the Bilingual item in the LanguageRequirement list. Used for validation |
 | deploymentJobTypeId	   | The Id of the Deployment term. Used for validation.							   |
+| remoteWorkArrangementId	   | The Id of the Remote option in the WorkArrangement lookup list. Used for validation. |
 | applicationDeadlineDate_Alias	   | The name of the ApplicationDeadlineDate column							   |
 | approvedStaffing_Alias	   | The name of the ApprovedStaffing column							   |
 | cityId_Alias	   | The name of the City column in the format `{ColumnName}LookupId`						   |
