@@ -54,7 +54,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.ContactName)), opportunity.ContactName },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.DepartmentId)), opportunity.DepartmentId },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.ContactEmail)), opportunity.ContactEmail },
-                            { PropertyAliasMapper.GetAlias(nameof(opportunity.ApplyEmail)), opportunity.ApplyEmail },
+                            //{ PropertyAliasMapper.GetAlias(nameof(opportunity.ApplyEmail)), opportunity.ApplyEmail },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleEn)), opportunity.JobTitleEn },
                             { PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleFr)), opportunity.JobTitleFr },
                             { config["jobTypeHiddenColName"], string.Join(";", opportunity.JobType.Select(jobType => jobType.ToString()))},
@@ -133,7 +133,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateTextField(opportunity.ContactName, PropertyAliasMapper.GetAlias(nameof(opportunity.ContactName)));
             ValidateLookupId(opportunity.DepartmentId, PropertyAliasMapper.GetAlias(nameof(opportunity.DepartmentId)));
             ValidateTextField(opportunity.ContactEmail, PropertyAliasMapper.GetAlias(nameof(opportunity.ContactEmail)));
-            ValidateTextField(opportunity.ApplyEmail, PropertyAliasMapper.GetAlias(nameof(opportunity.ApplyEmail)));
+            //ValidateTextField(opportunity.ApplyEmail, PropertyAliasMapper.GetAlias(nameof(opportunity.ApplyEmail)));
             ValidateTextField(opportunity.JobTitleEn, PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleEn)));
             ValidateTextField(opportunity.JobTitleFr, PropertyAliasMapper.GetAlias(nameof(opportunity.JobTitleFr)));
             ValidateTerms(opportunity.JobType, PropertyAliasMapper.GetAlias(nameof(opportunity.JobType)));
@@ -262,7 +262,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
         public string ContactName { get; set; }
         public string DepartmentId { get; set; }
         public string ContactEmail { get; set; }
-        public string ApplyEmail { get; set; }
+        //public string ApplyEmail { get; set; }
         public string JobTitleEn { get; set; }
         public string JobTitleFr { get; set; }
         public Term[] JobType { get; set; }
