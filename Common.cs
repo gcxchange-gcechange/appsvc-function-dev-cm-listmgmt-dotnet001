@@ -148,7 +148,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             ValidateLookupId(opportunity.SecurityClearanceId, PropertyAliasMapper.GetAlias(nameof(opportunity.SecurityClearanceId)));
             ValidateLookupId(opportunity.LanguageRequirementId, PropertyAliasMapper.GetAlias(nameof(opportunity.LanguageRequirementId)));
             ValidateLookupId(opportunity.WorkArrangementId, PropertyAliasMapper.GetAlias(nameof(opportunity.WorkArrangementId)));
-            ValidateLookupId(opportunity.CityId, PropertyAliasMapper.GetAlias(nameof(opportunity.CityId)));
 
             // If the opportunity is a Deployment it doesn't need a DurationId or DurationQuantity
             if (!opportunity.JobType.Any(j => j.Guid == config["deploymentJobTypeId"]))
@@ -176,6 +175,12 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 Regex langCompRegex = new Regex(@"^[A-C,E]{3}-[A-C,E]{3}$");
                 if (!langCompRegex.IsMatch(opportunity.LanguageComprehension))
                     throw new ArgumentException("Field is formatted incorrectly.", PropertyAliasMapper.GetAlias(nameof(opportunity.LanguageComprehension)));
+            }
+
+            // If a job is remote we don't need to validate the city field.
+            if (opportunity.WorkArrangementId != config["remoteWorkArrangementId"])
+            {
+                ValidateLookupId(opportunity.CityId, PropertyAliasMapper.GetAlias(nameof(opportunity.CityId)));
             }
         }
 
