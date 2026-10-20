@@ -34,7 +34,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 string itemId = data?.ItemId;
                 var listItem = Common.BuildListItem(requestBody, _logger);
 
-                GraphServiceClient client = Common.GetClient(_logger);
+                GraphServiceClient client = Common.GetClientSiteSelected(_logger);
                 string json = JsonConvert.SerializeObject(listItem.Fields.AdditionalData);
 
                 var newListItem = await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);

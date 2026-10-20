@@ -14,10 +14,15 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 {
     public class Common
     {
-        public static GraphServiceClient GetClient(ILogger logger)
+        //public static GraphServiceClient GetClient(ILogger logger)
+        //{
+        //    ROPCConfidentialTokenCredential auth = new ROPCConfidentialTokenCredential(logger);
+        //    return new GraphServiceClient(auth);
+        //}
+
+        public static GraphServiceClient GetClientSiteSelected(ILogger logger)
         {
-            ROPCConfidentialTokenCredential auth = new ROPCConfidentialTokenCredential(logger);
-            return new GraphServiceClient(auth);
+            return GetGraphClient(logger);
         }
 
         public static ListItem BuildListItem(string requestBody, ILogger logger)

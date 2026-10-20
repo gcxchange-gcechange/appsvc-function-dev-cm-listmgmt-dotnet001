@@ -31,7 +31,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 string itemId = data?.ItemId;
                 List<string> itemIds = itemId.Split(',').ToList();
 
-                GraphServiceClient client = Common.GetClient(_logger);
+                GraphServiceClient client = Common.GetClientSiteSelected(_logger);
 
                 foreach (var id in itemIds)
                 {
@@ -46,7 +46,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                             _logger.LogInformation($"Deleted list item with ID: {id.Trim()}");
                             continue;
                         }
-                        
+
                         _logger.LogWarning($"Unable to delete list item with ID: {id.Trim()}");
                         _logger.LogWarning($"Email didn't match. Got \"{email}\" expected \"{ClaimsPrincipalParser.GetUserEmail(req, _logger)}\"");
                     }
@@ -55,6 +55,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                         _logger.LogError($"Failed to delete list item with ID: {id.Trim()}");
                         _logger.LogError(e.Message);
                         if (e.InnerException is not null) _logger.LogError(e.InnerException.Message);
+                        _logger.LogError(e.StackTrace);
                     }
                 }
             }
