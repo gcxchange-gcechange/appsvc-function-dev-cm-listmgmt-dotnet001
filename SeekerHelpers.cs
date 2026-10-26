@@ -10,15 +10,42 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
     public static class SeekerHelpers
     {
         public const int VIOLATIONS_MAX = 2;
-        private static readonly List<string> keyPhrases = BuildKeyPhrases();
 
-        public  static int CountSeekerViolations(JobOpportunity opportunity, ILogger logger)
+        // PartialRatio score required to count as a match
+        private const int FUZZY_THRESHOLD = 90;
+        // phrases shorter than this use exact whole-word matching only
+        private const int MIN_FUZZY_LENGTH = 15;  
+
+        private static readonly Regex FirstPersonEn = new(@"(?<![\w.])i(?![\w.])|\bmy\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        private static readonly Regex FirstPersonFr = new(@"\b(je|j|mon|ma|mes)\b|\bm'", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        // Does the phrase start with first person? Sentence must also be first person.
+        private static readonly Regex PhraseStartsFirstPerson = new(@"^(i|my|je|j|m|mon)\b", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+        // Phrases that are too generic to match anywhere in a sentence
+        private static readonly HashSet<string> SentenceStartOnlyPhrases = new(
+            new[]
+            {
+                "I have a",
+                "I was a",
+                "J’ai un",
+                "J’ai une",
+                "J’ai été",
+                "J’étais"
+            }.Select(p => NormalizeText(p).ToLowerInvariant()),
+            StringComparer.Ordinal);
+
+        private static readonly List<PhraseEntry> PhraseEntries = BuildPhraseEntries();
+
+        private sealed record PhraseEntry(string Phrase, bool RequiresFirstPerson, Regex? ExactRegex);
+
+        public static int CountSeekerViolations(JobOpportunity opportunity, ILogger logger)
         {
             var violationCount = 0;
 
             try
             {
-                var inputs = new string[]
+                var inputs = new[]
                 {
                     opportunity.JobTitleEn,
                     opportunity.JobTitleFr,
@@ -31,41 +58,78 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                     if (string.IsNullOrEmpty(input)) continue;
 
                     var normInput = NormalizeText(input).ToLowerInvariant();
-                    var sentences = SplitIntoSentences(normInput);
 
-                    foreach (var sentence in sentences)
+                    foreach (var sentence in SplitIntoSentences(normInput))
                     {
-                        foreach (var phrase in keyPhrases)
+                        var sentenceHasFirstPerson =
+                            FirstPersonEn.IsMatch(sentence) || FirstPersonFr.IsMatch(sentence);
+
+                        foreach (var entry in PhraseEntries)
                         {
-                            string normPhrase = NormalizeText(phrase).ToLowerInvariant();
+                            // First person phrases only count when the sentence is first person too
+                            if (entry.RequiresFirstPerson && !sentenceHasFirstPerson)
+                                continue;
 
-                            if (PhraseIsFirstPerson(normPhrase))
-                            {
-                                var hasFirstPerson = ContainsFirstPersonEnglish(sentence) || ContainsFirstPersonFrench(sentence);
+                            if (!IsMatch(entry, sentence))
+                                continue;
 
-                                if (!hasFirstPerson)
-                                    continue;
-                            }
-
-                            var matchScore = Fuzz.PartialRatio(normPhrase, sentence);
-                            if (matchScore >= 85)
-                            {
-                                violationCount++;
-                                logger.LogWarning($"Violation: \"{sentence}\"\nFuzzy Match: \"{normPhrase}\"");
-                            }
+                            // Count each offending sentence once, no matter how many phrases hit it
+                            violationCount++;
+                            logger.LogWarning("Violation: \"{Sentence}\" Match: \"{Phrase}\"", sentence, entry.Phrase);
+                            break;
                         }
                     }
                 }
 
                 if (violationCount > 0)
-                    logger.LogWarning($"Total seeker violations: {violationCount}");
+                    logger.LogWarning("Total seeker violations: {Count}", violationCount);
             }
             catch (Exception ex)
             {
-                logger.LogError($"Count seeker violations failed: {ex.Message} - {ex.StackTrace}");
+                logger.LogError(ex, "Count seeker violations failed: {Message}", ex.Message);
             }
 
             return violationCount;
+        }
+
+        private static bool IsMatch(PhraseEntry entry, string sentence)
+        {
+            if (entry.ExactRegex != null)
+                return entry.ExactRegex.IsMatch(sentence);
+
+            return Fuzz.PartialRatio(entry.Phrase, sentence) >= FUZZY_THRESHOLD;
+        }
+
+        private static List<PhraseEntry> BuildPhraseEntries()
+        {
+            var entries = new List<PhraseEntry>();
+            var seen = new HashSet<string>(StringComparer.Ordinal);
+
+            foreach (var raw in BuildKeyPhrases())
+            {
+                var phrase = NormalizeText(raw).ToLowerInvariant();
+
+                if (string.IsNullOrWhiteSpace(phrase) || !seen.Add(phrase))
+                    continue;
+
+                var requiresFirstPerson = PhraseStartsFirstPerson.IsMatch(phrase);
+                var startOnly = SentenceStartOnlyPhrases.Contains(phrase);
+
+                Regex? exact = null;
+
+                if (startOnly)
+                {
+                    exact = new Regex(@"^[\W_]*" + Regex.Escape(phrase) + @"(?!\w)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+                }
+                else if (phrase.Length < MIN_FUZZY_LENGTH)
+                {
+                    exact = new Regex(@"(?<!\w)" + Regex.Escape(phrase) + @"(?!\w)", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+                }
+
+                entries.Add(new PhraseEntry(phrase, requiresFirstPerson, exact));
+            }
+
+            return entries;
         }
 
         private static List<string> BuildKeyPhrases()
@@ -155,7 +219,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 "Je me trouve en",
                 "Je me trouve au",
                 "J’apporte à l’emploi",
-                "Je suis ouvert à",
                 "J’ai travaillé par le passé chez",
                 "À la recherche active d’offres",
                 "Je suis prêt à",
@@ -164,8 +227,10 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             var expanded = new List<string>();
 
-            foreach (var phrase in phrases)
+            foreach (var original in phrases)
             {
+                var phrase = original.Replace('\u2019', '\'').Replace('\u2018', '\'');
+
                 expanded.Add(phrase);
 
                 if (phrase.Contains("I'm", StringComparison.OrdinalIgnoreCase))
@@ -191,17 +256,8 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             input = input.Replace("...", "**ELLIPSIS**");
 
-            string[] abbreviations =
-            {
-                "Mr.", "Mrs.", "Ms.", "Dr.", "Prof.", "Sr.", "Jr.",
-                "St.", "Mt.", "etc.", "i.e.", "e.g.", "vs."
-            };
-
-            foreach (var abbr in abbreviations)
-            {
-                input = input.Replace(abbr, abbr.Replace(".", "**DOT**"));
-            }
-
+            // Protect abbreviations
+            input = Regex.Replace(input, @"\b(?:mr|mrs|ms|dr|prof|sr|jr|st|mt|vs)\.|\b(?:i\.e|e\.g|etc)\.", m => m.Value.Replace(".", "**DOT**"));
             // Protect emails
             input = Regex.Replace(input, @"\b[\w\.-]+@[\w\.-]+\.\w+\b", m => m.Value.Replace(".", "**DOT**"));
             // Protect URLs
@@ -209,7 +265,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             // Protect decimal numbers
             input = Regex.Replace(input, @"\b\d+\.\d+\b", m => m.Value.Replace(".", "**DOT**"));
 
-            // Split on sentence boundaries
+            // Split on sentence boundaries and line breaks
             var sentences = Regex.Split(input, @"(?<=[.!?])\s+|\r?\n+")
                 .Where(s => !string.IsNullOrWhiteSpace(s))
                 .Select(s => s.Trim())
@@ -231,12 +287,11 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             text = WebUtility.HtmlDecode(text);
 
-            // Replace br tags with new line characters to help identify sentences later on
+            // Turn <br> and closing block tags into new lines so paragraphs and list items become separate sentences
             text = Regex.Replace(text, @"<br\s*/?>", "\n", RegexOptions.IgnoreCase);
+            text = Regex.Replace(text, @"</(p|li|div|h[1-6]|tr|ul|ol)>", "\n", RegexOptions.IgnoreCase);
 
             text = Regex.Replace(text, "<.*?>", " ");
-
-            text = text.Normalize(NormalizationForm.FormD);
 
             text = text.Replace('\u00A0', ' ')
                  .Replace('\u2019', '\'')
@@ -248,7 +303,9 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
             text = RemoveAccents(text);
 
-            text = Regex.Replace(text, @"\s+", " ");
+            // Collapse spaces/tabs but keep new lines
+            text = Regex.Replace(text, @"[^\S\n]+", " ");
+            text = Regex.Replace(text, @" ?\n[\s]*", "\n");
 
             return text.Normalize(NormalizationForm.FormC).Trim();
         }
@@ -266,21 +323,6 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             }
 
             return sb.ToString().Normalize(NormalizationForm.FormC);
-        }
-
-        private static bool ContainsFirstPersonEnglish(string text)
-        {
-            return Regex.IsMatch(text, @"\b(i am|i'm|i have|i've|i would|i'd|i will|i'll)\b");
-        }
-
-        private static bool ContainsFirstPersonFrench(string text)
-        {
-            return Regex.IsMatch(text, @"\b(je suis|j'suis|j ai|j'ai|je me|j ai travaille|j'ai travaille)\b");
-        }
-
-        private static bool PhraseIsFirstPerson(string phrase)
-        {
-            return Regex.IsMatch(phrase, @"^(i am|i'm|i have|i've|i would|i'd|i will|i'll|je suis|j'suis)", RegexOptions.IgnoreCase);
         }
     }
 }
