@@ -137,6 +137,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             var phrases = new List<string>
             {
                 "seeking a position",
+                "seeking opportunity",
                 "I’m seeking a role in",
                 "I'm looking for",
                 "I'm qualified for",
