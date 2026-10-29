@@ -1,9 +1,13 @@
-﻿using System.Security.Claims;
+﻿using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging;
+using Microsoft.Graph.Models.Security;
+using System.IdentityModel.Tokens.Jwt;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Principal;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.Logging;
 
 public static class ClaimsPrincipalParser
 {
@@ -35,43 +39,101 @@ public static class ClaimsPrincipalParser
 
     public static string GetUserEmail(HttpRequest req, ILogger logger)
     {
-        logger.LogError($"HttpRequest req = {req}");
+        string email = "";
 
-        ClaimsPrincipal principal = ClaimsPrincipalParser.Parse(req, logger);
+        //logger.LogError($"HttpRequest req = {req}");
 
-        logger.LogError($"Is the principal null? {principal == null}");
+        //foreach (var header in req.Headers)
+        //{
+        //    string name = header.Key;
+        //    var values = header.Value; // StringValues; may contain multiple values
 
-        string email;
+        //    logger.LogError($"{name}: {string.Join(", ", values)}");
+        //}
 
-        try
-        {
-            // non-guest user email is stored in the Upn claim
-            Claim claim = principal.FindFirst(ClaimTypes.Upn);
 
-            if (claim == null)
+        //ClaimsPrincipal principal = ClaimsPrincipalParser.Parse(req, logger);
+        //logger.LogError($"Is the principal null? {principal == null}");
+
+        //try
+        //{
+        //    // non-guest user email is stored in the Upn claim
+        //    Claim claim = principal.FindFirst(ClaimTypes.Upn);
+
+        //    if (claim == null)
+        //    {
+        //        logger.LogError($"Upn claim is null, check for emailaddress...");
+        //        // look for guest user email under a different claim
+        //        claim = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
+        //    }
+
+        //    if (claim != null)
+        //    {
+        //        email = claim?.Value.ToString();
+        //    }
+        //    else
+        //    {
+        //        email = "";
+        //        logger.LogError("Could not get email address from claims.");
+        //    }
+        //}
+        //catch (Exception ex)
+        //{
+        //    email = "";
+        //    logger.LogError($"Error getting Upn claim: {ex.Message}");
+        //}
+
+        string uniqueName = "";
+        string upn = "";
+
+        logger.LogError("Check Authorization header");
+
+        try {
+            var authorization = req.Headers.Authorization.ToString();
+            if (authorization.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
             {
-                logger.LogError($"Upn claim is null, check for emailaddress...");
-                // look for guest user email under a different claim
-                claim = principal.FindFirst("http://schemas.xmlsoap.org/ws/2005/05/identity/claims/emailaddress");
-            }
+                var rawToken = authorization["Bearer ".Length..].Trim();
+                var handler = new JwtSecurityTokenHandler();
 
-            if (claim != null)
-            {
-                email = claim?.Value.ToString();
-            }
-            else
-            {
-                email = "";
-                logger.LogError("Could not get email address from claims.");
+                if (handler.CanReadToken(rawToken))
+                {
+                    var jwt = handler.ReadJwtToken(rawToken);
+                    uniqueName = jwt.Claims.First(claim => claim.Type == "unique_name")?.Value;
+                    upn = jwt.Claims.First(claim => claim.Type == "upn")?.Value;
+                }
             }
         }
         catch (Exception ex)
         {
-            email = "";
-            logger.LogError($"Error getting Upn claim: {ex.Message}");
+            logger.LogError($"Error checking Authorization header: {ex.Message}");
+            logger.LogError(ex.Message);
+            if (ex.InnerException is not null) logger.LogError(ex.InnerException.Message);
+            logger.LogError(ex.StackTrace);
         }
 
-        //logger.LogError($"GetUserEmail: email = {email}");
+        logger.LogInformation($"unique_name: {uniqueName}");
+        logger.LogInformation($"upn: {upn}");
+
+        try
+        {
+            // non-guest user email is stored in the Upn claim
+            if (upn != null && upn.Contains("@"))
+            {
+                email = upn;
+            }
+            else if(uniqueName != null && uniqueName.Contains("@"))
+            {
+                email = uniqueName;
+            }
+            else
+            {
+                logger.LogError("Could not get email address from Authorization header.");
+            }
+        }
+        catch (Exception ex)
+        {
+            logger.LogError($"Error getting Upn claim: {ex.Message}");
+        }
 
         return email;
     }
@@ -92,24 +154,6 @@ public static class ClaimsPrincipalParser
             logger.LogError("Could not find header x-ms-client-principal");
         }
 
-
-        //logger.LogError("Headers:");
-        //foreach (var h in req.Headers)
-        //{
-        //    logger.LogError($"{h.Key} = {h.Value}");
-        //}
-
-
-        /** 
-         *  At this point, the code can iterate through `principal.Claims` to
-         *  check claims as part of validation. Alternatively, you can convert
-         *  it into a standard object with which to perform those checks later
-         *  in the request pipeline. That object can also be leveraged for 
-         *  associating user data, and so on. The rest of this function performs such
-         *  a conversion to create a `ClaimsPrincipal` as might be used in 
-         *  other .NET code.
-         */
-
         if (principal == null)
         {
             logger.LogError("Parse: principal is null");
@@ -121,20 +165,32 @@ public static class ClaimsPrincipalParser
             logger.LogError($"principal.NameClaimType = {principal.NameClaimType}");
             logger.LogError($"principal.RoleClaimType = {principal.RoleClaimType}");
 
-            foreach (var c in principal.Claims)
+            if (principal.Claims == null)
             {
-                logger.LogError($"{c.Type} = {c.Value}");
-                //try {  }
-                //catch (Exception e)
-                //{
-                //    logger.LogError("error showing claim");
-                //}
+                logger.LogError("principal.Claims is null");
+            }
+            else
+            {
+                foreach (var c in principal.Claims)
+                {
+                    logger.LogError($"{c.Type} = {c.Value}");
+                }
             }
         }
 
-        var identity = new ClaimsIdentity(principal.IdentityProvider, principal.NameClaimType, principal.RoleClaimType);
-        identity.AddClaims(principal.Claims.Select(c => new Claim(c.Type, c.Value)));
+        try {
+            var identity = new ClaimsIdentity(principal.IdentityProvider, principal.NameClaimType, principal.RoleClaimType);
+            identity.AddClaims(principal.Claims.Select(c => new Claim(c.Type, c.Value)));
+            return new ClaimsPrincipal(identity);
+        }
+        catch (Exception ex)
+        {
+            logger.LogError("Failed to create ClaimsIdentity");
+            logger.LogError(ex.Message);
+            if (ex.InnerException is not null) logger.LogError(ex.InnerException.Message);
+            logger.LogError(ex.StackTrace);
+        }
 
-        return new ClaimsPrincipal(identity);
+        return null;
     }
 }
