@@ -1,5 +1,6 @@
-using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Server.Kestrel.Core;
 using Microsoft.Azure.Functions.Worker;
+using Microsoft.Azure.Functions.Worker.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
@@ -9,14 +10,11 @@ var host = new HostBuilder()
     {
         services.AddApplicationInsightsTelemetryWorkerService();
         services.ConfigureFunctionsApplicationInsights();
-    })
-    .ConfigureWebHostDefaults(builder =>
-    {
-        builder.ConfigureKestrel(options =>
+
+        services.Configure<KestrelServerOptions>(options =>
         {
             options.AllowSynchronousIO = true;
         });
-        //builder.UseStartup<Startup>();
     })
     .Build();
 
