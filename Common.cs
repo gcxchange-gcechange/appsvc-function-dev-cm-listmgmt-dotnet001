@@ -30,14 +30,14 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 PropertyAliasMapper.LoadAliases(config);
 
                 JobOpportunity opportunity = JsonConvert.DeserializeObject<JobOpportunity>(requestBody);
-
+                    
                 ValidateJobOpportunity(opportunity);
 
                 var violations = CountSeekerViolations(opportunity, logger);
-                if (violations >= SeekerHelpers.VIOLATIONS_MAX)
+                if (violations.Count >= SeekerHelpers.VIOLATIONS_MAX)
                 {
                     logger.LogError($"Post blocked due to job seeking.");
-                    throw new HttpResponseException(HttpStatusCode.UnprocessableEntity, "Job seeking is prohibited.", new { Violations = violations });
+                    throw new SeekerViolationException(violations);
                 }
 
                 // data cleanup: if DurationId is empty then give it a value of 0
@@ -83,7 +83,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 return listItem;
             }
-            catch (HttpResponseException e)
+            catch (SeekerViolationException e)
             {
                 throw;
             }

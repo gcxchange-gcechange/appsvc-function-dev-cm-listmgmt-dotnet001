@@ -1,9 +1,10 @@
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Azure.Functions.Worker;
-using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Newtonsoft.Json;
+using static appsvc_function_dev_cm_listmgmt_dotnet001.SeekerHelpers;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
 {
@@ -46,6 +47,14 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                     _logger.LogWarning($"Unauthorized update attempted by logged in user {ClaimsPrincipalParser.GetUserEmail(req, _logger)} on JobOpportunityId {itemId}.");
                     result = new BadRequestResult();
                 }
+            }
+            catch (SeekerViolationException ex)
+            {
+                return new UnprocessableEntityObjectResult(new
+                {
+                    Message = ex.Message,
+                    Violations = ex.Violations
+                });
             }
             catch (HttpResponseException e)
             {

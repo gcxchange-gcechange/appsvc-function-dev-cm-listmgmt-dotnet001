@@ -4,6 +4,7 @@ using Microsoft.Azure.Functions.Worker.Http;
 using Microsoft.Extensions.Logging;
 using Microsoft.Graph;
 using Newtonsoft.Json;
+using static appsvc_function_dev_cm_listmgmt_dotnet001.SeekerHelpers;
 
 namespace appsvc_function_dev_cm_listmgmt_dotnet001
 {
@@ -40,12 +41,20 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 var newListItem = await client.Sites[config.SiteId].Lists[config.ListId].Items.PostAsync(listItem);
                 listItemId = newListItem.Id;
             }
+            catch (SeekerViolationException ex)
+            {
+                return new UnprocessableEntityObjectResult(new
+                {
+                    Message = ex.Message,
+                    Violations = ex.Violations
+                });
+            }
             catch (HttpResponseException e)
             {
-                var response = req.CreateResponse(e.StatusCode);
-                response.Headers.Add("Content-Type", "application/json");
-                await response.WriteStringAsync(JsonConvert.SerializeObject(e.Details));
-                return (IActionResult)response;
+                return new ObjectResult(e.Details)
+                {
+                    StatusCode = (int)e.StatusCode
+                };
             }
             catch (Exception e)
             {
