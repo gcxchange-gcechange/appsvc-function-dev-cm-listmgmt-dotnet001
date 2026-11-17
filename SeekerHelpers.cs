@@ -74,7 +74,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                                 continue;
 
                             // Count each offending sentence once, no matter how many phrases hit it
-                            violations.Add(sentence, entry.Phrase);
+                            violations.TryAdd(sentence, entry.Phrase);
                             logger.LogWarning("Violation: \"{Sentence}\" Match: \"{Phrase}\"", sentence, entry.Phrase);
                             break;
                         }
