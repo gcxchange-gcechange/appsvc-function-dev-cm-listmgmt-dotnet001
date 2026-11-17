@@ -100,7 +100,7 @@ namespace xUnitTests
             _jobOpportunity.JobDescriptionEn = "Are you passionate about visual storytelling and creating designs that inspire action? Join the Digital Innovation and Change Enablement (DSG, DTP) team as a Communications Designer!\n\nIn this hybrid role at Carling Campus, you will work closely with a dynamic team to develop visuals that support internal communications and digital change initiatives. Strong graphic design skills are essential, as well as a solid understanding of communications and marketing principles. Additional experience in photography or videography, change management, or a passion for digital adoption will be considered an asset. Above all, we are looking for someone who loves visual storytelling and thrives in a collaborative environment.\n\nThis position requires Bilingual BBB / Reliability Clearance. \n\nIf you are at AS-03 level and ready to make an impact, we would like to hear from you at catherine.laberge3@forces.gc.ca.";
             _jobOpportunity.JobDescriptionFr = "Êtes-vous passionné(e) par la narration visuelle et la création de designs qui inspirent à passer à l’action? Joignez-vous à l’équipe Innovation numérique et facilitation du changement (GSN, PTN) en tant que Concepteur(trice) en communications!\n\nDans ce rôle hybride au Campus Carling, vous travaillerez en étroite collaboration avec une équipe dynamique afin de développer des visuels qui soutiennent les communications internes et les initiatives de changement numérique. De solides compétences en conception graphique sont essentielles, ainsi qu’une bonne compréhension des principes de communication et de marketing. Une expérience supplémentaire en photographie ou vidéographie, en gestion du changement, ou une passion pour l’adoption numérique sera considérée comme un atout. Surtout, nous recherchons quelqu’un qui aime la narration visuelle et qui s’épanouit dans un environnement collaboratif.\n\nCe poste exige le bilinguisme BBB et une cote de fiabilité.\n\nSi vous êtes au niveau AS-03 et prêt(e) à avoir un impact, envoyez votre CV à catherine.laberge3@forces.gc.ca.";
 
-            int violations = 0;
+            Dictionary<string, string> violations;
 
             try
             {
@@ -112,7 +112,7 @@ namespace xUnitTests
                 return;
             }
 
-            Assert.Equal(0, violations);
+            Assert.True(violations.Count == 0);
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace xUnitTests
             _jobOpportunity.JobDescriptionEn = "I am seeking a position in communications where I can apply my design experience. I previously worked at a federal department and I bring strong visual storytelling skills to the table.";
             _jobOpportunity.JobDescriptionFr = "Je recherche un emploi en communications numériques. Je suis parfaitement qualifié pour ce type de poste et j’ai travaillé par le passé chez un ministère fédéral.";
 
-            int violations = 0;
+            Dictionary<string, string> violations;
 
             try
             {
@@ -135,7 +135,7 @@ namespace xUnitTests
                 return;
             }
 
-            Assert.True(violations >= SeekerHelpers.VIOLATIONS_MAX);
+            Assert.True(violations.Count >= SeekerHelpers.VIOLATIONS_MAX);
         }
 
         //[Fact]
