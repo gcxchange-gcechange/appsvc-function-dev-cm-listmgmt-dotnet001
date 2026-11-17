@@ -98,7 +98,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             }
         }
 
-        private static int CalculateDurationInDays(JobOpportunity opportunity, IConfigurationRoot config)
+        public static int CalculateDurationInDays(JobOpportunity opportunity, IConfigurationRoot config)
         {
             var durationId = int.Parse(opportunity.DurationId);
 

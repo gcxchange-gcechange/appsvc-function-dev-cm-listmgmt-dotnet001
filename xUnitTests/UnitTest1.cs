@@ -1,4 +1,5 @@
 using appsvc_function_dev_cm_listmgmt_dotnet001;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Reflection.Emit;
@@ -487,6 +488,176 @@ namespace xUnitTests
             Assert.Empty(violations);
         }
 
+        [Theory]
+        [InlineData(1, 365)]
+        [InlineData(2, 730)]
+        [InlineData(3, 1095)]
+        [InlineData(5, 1825)]
+        public void CalculateDurationInDays_ShouldCalculateYearsCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "1";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Theory]
+        [InlineData(1, 30)]
+        [InlineData(2, 61)]
+        [InlineData(3, 91)]
+        [InlineData(6, 183)]
+        [InlineData(12, 365)]
+        [InlineData(18, 548)]
+        [InlineData(24, 730)]
+        public void CalculateDurationInDays_ShouldCalculateMonthsCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "2";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Theory]
+        [InlineData(1, 7)]
+        [InlineData(2, 14)]
+        [InlineData(4, 28)]
+        [InlineData(8, 56)]
+        [InlineData(13, 91)]
+        [InlineData(26, 183)]
+        [InlineData(52, 365)]
+        public void CalculateDurationInDays_ShouldCalculateWeeksCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "3";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Fact]
+        public void CalculateDurationInDays_ShouldReturnZeroWhenDurationIdIsZero()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "0";
+            _jobOpportunity.DurationQuantity = 12;
+
+            var result = CalculateDurationInDays(
+                _jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(0, result);
+        }
+
+        [Theory]
+        [InlineData(1, 30)]
+        [InlineData(2, 61)]
+        [InlineData(5, 152)]
+        [InlineData(7, 213)]
+        public void CalculateDurationInDays_ShouldRoundMonthsAwayFromZero(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "2";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Theory]
+        [InlineData(1, 7)]
+        [InlineData(3, 21)]
+        [InlineData(5, 35)]
+        [InlineData(7, 49)]
+        public void CalculateDurationInDays_ShouldRoundWeeksCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "3";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+
+        [Theory]
+        [InlineData("4")]
+        [InlineData("99")]
+        [InlineData("-1")]
+        public void CalculateDurationInDays_ShouldThrowWhenDurationIdIsInvalid(string durationId)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = durationId;
+            _jobOpportunity.DurationQuantity = 1;
+
+            var exception = Assert.Throws<ArgumentException>(() => CalculateDurationInDays(_jobOpportunity, GetDurationConfig()));
+
+            Assert.Equal("DurationId", exception.ParamName);
+            Assert.Contains("Failed to map", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("abc")]
+        [InlineData("1.5")]
+        public void CalculateDurationInDays_ShouldThrowWhenDurationIdIsNotAnInteger(string durationId)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = durationId;
+
+            Assert.Throws<FormatException>(() => CalculateDurationInDays(_jobOpportunity, GetDurationConfig()));
+        }
+
+        [Fact]
+        public void CalculateDurationInDays_ShouldThrowWhenDurationIdIsNull()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = null;
+
+            Assert.Throws<ArgumentNullException>(() => CalculateDurationInDays(_jobOpportunity, GetDurationConfig()));
+        }
+
+
+        [Fact]
+        public void CalculateDurationInDays_ShouldUseConfiguredDurationIds()
+        {
+            ResetJobOpportunity();
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["durationYearId"] = "10",
+                    ["durationMonthId"] = "20",
+                    ["durationWeekId"] = "30"
+                })
+                .Build();
+
+            _jobOpportunity.DurationId = "20";
+            _jobOpportunity.DurationQuantity = 6;
+
+            var result = CalculateDurationInDays(_jobOpportunity, config);
+
+            Assert.Equal(183, result);
+        }
+
+
         private void ResetJobOpportunity()
         {
             _jobOpportunity.ContactObjectId = "1";
@@ -514,6 +685,18 @@ namespace xUnitTests
             _jobOpportunity.ApprovedStaffing = true;
             _jobOpportunity.SkillIds = ["1", "2", "3"];
             _jobOpportunity.DurationQuantity = 3;
+        }
+
+        private IConfigurationRoot GetDurationConfig()
+        {
+            return new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["durationYearId"] = "1",
+                    ["durationMonthId"] = "2",
+                    ["durationWeekId"] = "3"
+                })
+                .Build();
         }
     }
 }
