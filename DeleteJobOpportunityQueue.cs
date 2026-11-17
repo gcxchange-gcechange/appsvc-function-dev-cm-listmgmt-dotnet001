@@ -32,7 +32,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                     if (itemIds.Any())
                     {
                         var config = new Config();
-                        var client = Common.GetClient(_logger);
+                        var client = Common.GetClientSiteSelected(_logger);
 
                         foreach (var id in itemIds)
                         {
