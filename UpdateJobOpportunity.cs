@@ -38,7 +38,7 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
                 if (ClaimsPrincipalParser.CanUpdate(req, ContactEmail, _logger))
                 {
-                    GraphServiceClient client = Common.GetClient(_logger);
+                    GraphServiceClient client = Common.GetClientSiteSelected(_logger);
                     await client.Sites[config.SiteId].Lists[config.ListId].Items[itemId].Fields.PatchAsync(listItem.Fields);
                 }
                 else
