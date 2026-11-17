@@ -6,18 +6,45 @@ pr:
   branches:
     include:
       - main
-      - master 
-
-resources:
-  repositories:
-    - repository: pipeline-templates
-      type: github
-      name: gcxchange-gcechange/test-pipeline
-      ref: refs/heads/master
-      endpoint: 'GCExchange (3)'
+      - master
 
 pool:
-  vmImage: windows-latest
+  vmImage: 'ubuntu-latest'
 
-extends:
-  template: backend-template.yml@pipeline-templates
+steps:
+  - script: |
+      DOTNET_VERSION=$(grep -oPm1 '(?<=<TargetFramework>)[^<]+' *.csproj)
+
+      if [ -z "$DOTNET_VERSION" ]; then
+        echo "Could not determine TargetFramework from .csproj"
+        exit 1
+      fi
+
+      DOTNET_VERSION=${DOTNET_VERSION#net}
+      echo "Installing .NET SDK: $DOTNET_VERSION.x"
+      echo "##vso[task.setvariable variable=DotNetVersion]$DOTNET_VERSION.x"
+    displayName: 'Determine .NET Version'
+  - task: UseDotNet@2
+    displayName: 'Install .NET SDK'
+    inputs:
+      packageType: sdk
+      version: '$(DotNetVersion)'
+
+  - script: dotnet restore
+    displayName: "Restore"
+
+  - script: dotnet build --configuration Release --no-restore
+    displayName: "Build"
+
+  - script: dotnet test --configuration Release --no-build --logger trx --results-directory "$(Agent.TempDirectory)/TestResults"
+    displayName: "Test"
+
+  - task: PublishTestResults@2
+    displayName: 'Publish Test Results'
+    condition: succeededOrFailed()
+    inputs:
+      testResultsFormat: 'VSTest'
+      testResultsFiles: '**/*.trx'
+      searchFolder: '$(Agent.TempDirectory)/TestResults'
+      failTaskOnFailedTests: true
+      publishRunAttachments: true
