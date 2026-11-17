@@ -36,7 +36,7 @@ steps:
   - script: dotnet build --configuration Release --no-restore
     displayName: "Build"
 
-  - script: dotnet test --configuration Release --no-build --logger trx --results-directory "$(Agent.TempDirectory)/TestResults"
+  - script: dotnet test --configuration Release --no-build --results-directory "$(Agent.TempDirectory)/TestResults" -- --report-trx
     displayName: "Test"
 
   - task: PublishTestResults@2
