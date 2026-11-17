@@ -6,28 +6,18 @@ pr:
   branches:
     include:
       - main
-      - master
+      - master 
+
+resources:
+  repositories:
+    - repository: pipeline-templates
+      type: github
+      name: gcxchange-gcechange/test-pipeline
+      ref: refs/heads/master
+      endpoint: 'GCExchange (3)'
 
 pool:
-  vmImage: 'windows-latest'
+  vmImage: windows-latest
 
-steps:
-  - task: UseDotNet@2
-    inputs:
-      packageType: 'sdk'
-      version: '8.0.x'
-
-  - script: dotnet restore
-    displayName: "Restore"
-
-  - script: dotnet build --configuration Release
-    displayName: "Build"
-
-  - script: dotnet test --configuration Release --logger trx
-    displayName: "Test"
-
-  - task: PublishTestResults@2
-    inputs:
-      testResultsFormat: 'VSTest'
-      testResultsFiles: '**/*.trx'
-      failTaskOnFailedTests: true
+extends:
+  template: backend-template.yml@pipeline-templates
