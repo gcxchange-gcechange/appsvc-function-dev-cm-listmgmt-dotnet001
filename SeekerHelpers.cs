@@ -39,9 +39,9 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
 
         private sealed record PhraseEntry(string Phrase, bool RequiresFirstPerson, Regex? ExactRegex);
 
-        public static int CountSeekerViolations(JobOpportunity opportunity, ILogger logger)
+        public static Dictionary<string, string> CountSeekerViolations(JobOpportunity opportunity, ILogger logger)
         {
-            var violationCount = 0;
+            var violations = new Dictionary<string, string>();
 
             try
             {
@@ -74,22 +74,22 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                                 continue;
 
                             // Count each offending sentence once, no matter how many phrases hit it
-                            violationCount++;
+                            violations.TryAdd(sentence, entry.Phrase);
                             logger.LogWarning("Violation: \"{Sentence}\" Match: \"{Phrase}\"", sentence, entry.Phrase);
                             break;
                         }
                     }
                 }
 
-                if (violationCount > 0)
-                    logger.LogWarning("Total seeker violations: {Count}", violationCount);
+                if (violations.Count > 0)
+                    logger.LogWarning("Total seeker violations: {Count}", violations.Count);
             }
             catch (Exception ex)
             {
                 logger.LogError(ex, "Count seeker violations failed: {Message}", ex.Message);
             }
 
-            return violationCount;
+            return violations;
         }
 
         private static bool IsMatch(PhraseEntry entry, string sentence)
@@ -223,7 +223,17 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
                 "J’ai travaillé par le passé chez",
                 "À la recherche active d’offres",
                 "Je suis prêt à",
-                "Vous pouvez me joindre à"
+                "Vous pouvez me joindre à",
+                "seeking deployment",
+                "seeking an assignment",
+                "seeking deployment opportunities",
+                "looking for a deployment",
+                "looking for an assignment",
+                "à la recherche d’une affectation",
+                "à la recherche d’une mutation",
+                "à la recherche de possibilités d’affectation",
+                "je cherche une affectation",
+                "je cherche une mutation"
             };
 
             var expanded = new List<string>();
@@ -324,6 +334,17 @@ namespace appsvc_function_dev_cm_listmgmt_dotnet001
             }
 
             return sb.ToString().Normalize(NormalizationForm.FormC);
+        }
+
+        public class SeekerViolationException : Exception
+        {
+            public Dictionary<string, string> Violations { get; }
+
+            public SeekerViolationException(Dictionary<string, string> violations)
+                : base("Job seeking is prohibited.")
+            {
+                Violations = violations;
+            }
         }
     }
 }

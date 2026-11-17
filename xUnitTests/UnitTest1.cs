@@ -1,4 +1,5 @@
 using appsvc_function_dev_cm_listmgmt_dotnet001;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 using System.Reflection.Emit;
@@ -16,7 +17,6 @@ namespace xUnitTests
         {
             using ILoggerFactory factory = LoggerFactory.Create(builder => builder.AddConsole());
             _logger = factory.CreateLogger("UnitTest");
-            _logger.LogInformation("Hello World! Logging is {Description}.", "fun");
         }
 
         [Fact]
@@ -100,7 +100,7 @@ namespace xUnitTests
             _jobOpportunity.JobDescriptionEn = "Are you passionate about visual storytelling and creating designs that inspire action? Join the Digital Innovation and Change Enablement (DSG, DTP) team as a Communications Designer!\n\nIn this hybrid role at Carling Campus, you will work closely with a dynamic team to develop visuals that support internal communications and digital change initiatives. Strong graphic design skills are essential, as well as a solid understanding of communications and marketing principles. Additional experience in photography or videography, change management, or a passion for digital adoption will be considered an asset. Above all, we are looking for someone who loves visual storytelling and thrives in a collaborative environment.\n\nThis position requires Bilingual BBB / Reliability Clearance. \n\nIf you are at AS-03 level and ready to make an impact, we would like to hear from you at catherine.laberge3@forces.gc.ca.";
             _jobOpportunity.JobDescriptionFr = "Êtes-vous passionné(e) par la narration visuelle et la création de designs qui inspirent à passer à l’action? Joignez-vous à l’équipe Innovation numérique et facilitation du changement (GSN, PTN) en tant que Concepteur(trice) en communications!\n\nDans ce rôle hybride au Campus Carling, vous travaillerez en étroite collaboration avec une équipe dynamique afin de développer des visuels qui soutiennent les communications internes et les initiatives de changement numérique. De solides compétences en conception graphique sont essentielles, ainsi qu’une bonne compréhension des principes de communication et de marketing. Une expérience supplémentaire en photographie ou vidéographie, en gestion du changement, ou une passion pour l’adoption numérique sera considérée comme un atout. Surtout, nous recherchons quelqu’un qui aime la narration visuelle et qui s’épanouit dans un environnement collaboratif.\n\nCe poste exige le bilinguisme BBB et une cote de fiabilité.\n\nSi vous êtes au niveau AS-03 et prêt(e) à avoir un impact, envoyez votre CV à catherine.laberge3@forces.gc.ca.";
 
-            int violations = 0;
+            Dictionary<string, string> violations;
 
             try
             {
@@ -112,7 +112,7 @@ namespace xUnitTests
                 return;
             }
 
-            Assert.Equal(0, violations);
+            Assert.True(violations.Count == 0);
         }
 
         [Fact]
@@ -123,7 +123,7 @@ namespace xUnitTests
             _jobOpportunity.JobDescriptionEn = "I am seeking a position in communications where I can apply my design experience. I previously worked at a federal department and I bring strong visual storytelling skills to the table.";
             _jobOpportunity.JobDescriptionFr = "Je recherche un emploi en communications numériques. Je suis parfaitement qualifié pour ce type de poste et j’ai travaillé par le passé chez un ministère fédéral.";
 
-            int violations = 0;
+            Dictionary<string, string> violations;
 
             try
             {
@@ -135,28 +135,528 @@ namespace xUnitTests
                 return;
             }
 
-            Assert.True(violations >= SeekerHelpers.VIOLATIONS_MAX);
+            Assert.True(violations.Count >= SeekerHelpers.VIOLATIONS_MAX);
         }
 
-        //[Fact]
-        //public void ShouldReturnListItem()
-        //{
-        //    // arrange
-        //    string json;
-        //    using (StreamReader r = new StreamReader(@"C:\Users\OPOSTLET\source\repos\appsvc-function-dev-cm-listmgmt-dotnet001\xUnitTests\JobOpportunity.json"))
-        //    {
-        //        json = r.ReadToEnd();
-        //    }
 
-        //    Console.WriteLine(json);
+        [Fact]
+        public void JobShouldFailWhenSeekingPosition()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "I am seeking a position in software development.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Single(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenLookingForOpportunities()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "I am looking for a new opportunity within the organization.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenUsingFirstPersonPhrases()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "I offer extensive experience in software development.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenSeekingDeployment()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "I am seeking deployment opportunities within the department.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenUsingPersonalIntroduction()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "My name is John and I have extensive experience in project management.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
 
 
-        //    // act0
-        //    var listItem = BuildListItem(json, _logger);
+        [Fact]
+        public void JobShouldFailWhenSeekingEmploymentInFrench()
+        {
+            ResetJobOpportunity();
 
-        //    // assert
-        //    Assert.True(listItem != null);
-        //}
+            _jobOpportunity.JobDescriptionFr = "Je suis à la recherche d'un emploi dans le domaine informatique.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenSeekingDeploymentInFrench()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionFr = "Je cherche une affectation dans une autre direction.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenUsingPersonalIntroductionInFrench()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionFr = "Je me nomme Jean et je possède plusieurs années d'expérience.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenUsingFrenchCareerSearchPhrases()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionFr = "À la recherche de possibilités d'affectation dans la fonction publique.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+
+        [Fact]
+        public void JobShouldPassWhenSeekingPositionIsNotMentioned()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "We are looking for an experienced software developer to join our team.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+        [Fact]
+        public void JobShouldPassWhenFirstPersonPhraseIsNotAtSentenceStart()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "The successful candidate should demonstrate that they have a strong understanding of the subject.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+        [Fact]
+        public void JobShouldPassWhenShortPhraseIsPartOfAnotherWord()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "The classification of this position is AS-03.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+        [Fact]
+        public void JobShouldPassWhenIHaveAPhraseIsNotAtSentenceStart()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "Candidates who demonstrate that I have a strong understanding of the subject will be considered.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+
+        [Fact]
+        public void JobShouldDetectViolationsAcrossMultipleSentences()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "This is an interesting opportunity. I am looking for a new role. We offer competitive benefits.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Single(violations);
+        }
+
+        [Fact]
+        public void JobShouldDetectViolationsSeparatedByNewLines()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "This is an interesting opportunity.\nI am seeking a position in IT.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Single(violations);
+        }
+
+        [Fact]
+        public void JobShouldDetectViolationsInHtmlContent()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "<p>Welcome to our team.</p><p>I am seeking a position in IT.</p>";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Single(violations);
+        }
+
+        [Fact]
+        public void JobShouldDetectViolationsWithHtmlEncodedCharacters()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "<p>I&#39;m looking for a new opportunity.</p>";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldDetectViolationsWithCurlyApostrophes()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "I’m looking for a new opportunity in the department.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldDetectViolationsWithAccentedFrenchCharacters()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionFr = "À la recherche d'occasions dans la fonction publique.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+
+        [Fact]
+        public void JobShouldFailWhenEnglishTitleContainsViolation()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobTitleEn = "Seeking a Position in Information Technology";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldFailWhenFrenchTitleContainsViolation()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobTitleFr = "Recherche d'emploi en informatique";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.NotEmpty(violations);
+        }
+
+        [Fact]
+        public void JobShouldPassWhenOnlyTitlesContainLegitimateContent()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobTitleEn = "Senior Software Developer";
+            _jobOpportunity.JobTitleFr = "Développeur logiciel principal";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+
+        [Fact]
+        public void JobShouldCountMultipleViolations()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "I am looking for a new opportunity. I offer extensive experience in software development. My name is John.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Equal(3, violations.Count);
+        }
+
+        [Fact]
+        public void JobShouldOnlyCountOneViolationPerSentence()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "I am looking for a new opportunity and I offer extensive experience.";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Single(violations);
+        }
+
+        [Fact]
+        public void JobShouldNotBlockMatchesFromHTML()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "We are looking for a candidate that can <i>excel at</i>";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+        [Fact]
+        public void JobShouldNotBlockHTMLSeekerMatches()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobDescriptionEn = "<i am seeking>Hello, welcome to my world.</i am seeking>";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+
+        [Fact]
+        public void JobShouldPassWhenAllFieldsAreEmpty()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobTitleEn = "";
+            _jobOpportunity.JobTitleFr = "";
+            _jobOpportunity.JobDescriptionEn = "";
+            _jobOpportunity.JobDescriptionFr = "";
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+        [Fact]
+        public void JobShouldPassWhenSomeFieldsAreNull()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.JobTitleEn = null;
+            _jobOpportunity.JobTitleFr = null;
+            _jobOpportunity.JobDescriptionEn = "Join our dynamic team!";
+            _jobOpportunity.JobDescriptionFr = null;
+
+            var violations = CountSeekerViolations(_jobOpportunity, _logger);
+
+            Assert.Empty(violations);
+        }
+
+        [Theory]
+        [InlineData(1, 365)]
+        [InlineData(2, 730)]
+        [InlineData(3, 1095)]
+        [InlineData(5, 1825)]
+        public void CalculateDurationInDays_ShouldCalculateYearsCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "1";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Theory]
+        [InlineData(1, 30)]
+        [InlineData(2, 61)]
+        [InlineData(3, 91)]
+        [InlineData(6, 183)]
+        [InlineData(12, 365)]
+        [InlineData(18, 548)]
+        [InlineData(24, 730)]
+        public void CalculateDurationInDays_ShouldCalculateMonthsCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "2";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Theory]
+        [InlineData(1, 7)]
+        [InlineData(2, 14)]
+        [InlineData(4, 28)]
+        [InlineData(8, 56)]
+        [InlineData(13, 91)]
+        [InlineData(26, 183)]
+        [InlineData(52, 365)]
+        public void CalculateDurationInDays_ShouldCalculateWeeksCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "3";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Fact]
+        public void CalculateDurationInDays_ShouldReturnZeroWhenDurationIdIsZero()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "0";
+            _jobOpportunity.DurationQuantity = 12;
+
+            var result = CalculateDurationInDays(
+                _jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(0, result);
+        }
+
+        [Theory]
+        [InlineData(1, 30)]
+        [InlineData(2, 61)]
+        [InlineData(5, 152)]
+        [InlineData(7, 213)]
+        public void CalculateDurationInDays_ShouldRoundMonthsAwayFromZero(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "2";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+        [Theory]
+        [InlineData(1, 7)]
+        [InlineData(3, 21)]
+        [InlineData(5, 35)]
+        [InlineData(7, 49)]
+        public void CalculateDurationInDays_ShouldRoundWeeksCorrectly(int quantity, int expectedDays)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = "3";
+            _jobOpportunity.DurationQuantity = quantity;
+
+            var result = CalculateDurationInDays(_jobOpportunity, GetDurationConfig());
+
+            Assert.Equal(expectedDays, result);
+        }
+
+
+        [Theory]
+        [InlineData("4")]
+        [InlineData("99")]
+        [InlineData("-1")]
+        public void CalculateDurationInDays_ShouldThrowWhenDurationIdIsInvalid(string durationId)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = durationId;
+            _jobOpportunity.DurationQuantity = 1;
+
+            var exception = Assert.Throws<ArgumentException>(() => CalculateDurationInDays(_jobOpportunity, GetDurationConfig()));
+
+            Assert.Equal("DurationId", exception.ParamName);
+            Assert.Contains("Failed to map", exception.Message);
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("abc")]
+        [InlineData("1.5")]
+        public void CalculateDurationInDays_ShouldThrowWhenDurationIdIsNotAnInteger(string durationId)
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = durationId;
+
+            Assert.Throws<FormatException>(() => CalculateDurationInDays(_jobOpportunity, GetDurationConfig()));
+        }
+
+        [Fact]
+        public void CalculateDurationInDays_ShouldThrowWhenDurationIdIsNull()
+        {
+            ResetJobOpportunity();
+
+            _jobOpportunity.DurationId = null;
+
+            Assert.Throws<ArgumentNullException>(() => CalculateDurationInDays(_jobOpportunity, GetDurationConfig()));
+        }
+
+
+        [Fact]
+        public void CalculateDurationInDays_ShouldUseConfiguredDurationIds()
+        {
+            ResetJobOpportunity();
+
+            var config = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["durationYearId"] = "10",
+                    ["durationMonthId"] = "20",
+                    ["durationWeekId"] = "30"
+                })
+                .Build();
+
+            _jobOpportunity.DurationId = "20";
+            _jobOpportunity.DurationQuantity = 6;
+
+            var result = CalculateDurationInDays(_jobOpportunity, config);
+
+            Assert.Equal(183, result);
+        }
+
 
         private void ResetJobOpportunity()
         {
@@ -185,6 +685,18 @@ namespace xUnitTests
             _jobOpportunity.ApprovedStaffing = true;
             _jobOpportunity.SkillIds = ["1", "2", "3"];
             _jobOpportunity.DurationQuantity = 3;
+        }
+
+        private IConfigurationRoot GetDurationConfig()
+        {
+            return new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["durationYearId"] = "1",
+                    ["durationMonthId"] = "2",
+                    ["durationWeekId"] = "3"
+                })
+                .Build();
         }
     }
 }
